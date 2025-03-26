@@ -33,7 +33,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       className={`relative group rounded-xl p-4 transition-all duration-300 backdrop-blur-sm
         ${isActive 
           ? `bg-${info.color}/10 ring-1 ring-${info.color}/30 shadow-elevation` 
-          : 'bg-white/50 hover:bg-white/80 hover:shadow-subtle cursor-pointer'
+          : 'bg-gray-800/50 hover:bg-gray-800/80 hover:shadow-subtle cursor-pointer'
         }`}
       onClick={onClick}
     >
@@ -49,8 +49,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         </div>
         
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-foreground truncate">{info.title}</h3>
-          <p className="mt-1 text-xs text-muted-foreground text-balance line-clamp-2">
+          <h3 className="text-sm font-medium text-white truncate">{info.title}</h3>
+          <p className="mt-1 text-xs text-gray-400 text-balance line-clamp-2">
             {info.description}
           </p>
         </div>

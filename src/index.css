@@ -27,7 +27,8 @@
     --radius: 0.5rem;
   }
 
-  .dark {
+  /* Always use dark theme now */
+  :root {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -66,15 +67,15 @@
   }
 
   .shadow-subtle {
-    @apply shadow-sm shadow-black/5;
+    @apply shadow-sm shadow-black/20;
   }
 
   .shadow-elevation {
-    @apply shadow-lg shadow-black/10;
+    @apply shadow-lg shadow-black/30;
   }
 
   .shadow-glass {
-    @apply shadow-xl shadow-black/5;
+    @apply shadow-xl shadow-black/30;
   }
 
   .animate-pulse-soft {
@@ -116,19 +117,20 @@
 }
 
 .scroll-animate {
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  will-change: opacity, transform;
 }
 
 .prose h3 {
-  @apply text-lg font-medium mt-6 mb-2;
+  @apply text-lg font-medium mt-6 mb-2 text-white;
 }
 
 .prose p {
-  @apply mb-4;
+  @apply mb-4 text-gray-300;
 }
 
 .prose ul {
-  @apply list-disc pl-5 mb-4;
+  @apply list-disc pl-5 mb-4 text-gray-300;
 }
 
 .prose li {
@@ -138,4 +140,41 @@
 pre {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+/* Dark theme tweaks for prose */
+.prose-invert h1, 
+.prose-invert h2, 
+.prose-invert h3, 
+.prose-invert h4, 
+.prose-invert h5, 
+.prose-invert h6 {
+  @apply text-white;
+}
+
+.prose-invert p, 
+.prose-invert ul, 
+.prose-invert ol, 
+.prose-invert li {
+  @apply text-gray-300;
+}
+
+.prose-invert a {
+  @apply text-blue-400 hover:text-blue-300;
+}
+
+.prose-invert code {
+  @apply bg-gray-800 text-gray-200 px-1 py-0.5 rounded text-sm;
+}
+
+.prose-invert pre {
+  @apply bg-gray-900 text-gray-200 p-4 rounded-lg;
+}
+
+/* Fix for disappearing elements on scroll */
+.scroll-animate {
+  transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  will-change: opacity, transform;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }

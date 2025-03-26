@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Send, AlertTriangle, Info } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link } from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
 import { analyzeWithGemini } from '../utils/geminiApi';
 import AnalysisResult from './AnalysisResult';
@@ -8,49 +8,93 @@ import AnimatedTransition from './AnimatedTransition';
 import ApiKeyForm from './ApiKeyForm';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from '@/components/ui/button';
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from '@/hooks/use-toast';
 
 const TextAnalyzer: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResultType | null>(null);
   const [showHint, setShowHint] = useState(true);
-  const [useGemini, setUseGemini] = useState(false);
+  const [useGemini, setUseGemini] = useState(true);
   const [geminiResponse, setGeminiResponse] = useState<string | null>(null);
-  const [hasApiKey, setHasApiKey] = useState(false);
-
-  useEffect(() => {
-    // Check if API key exists
-    const apiKey = sessionStorage.getItem('gemini_api_key');
-    setHasApiKey(!!apiKey);
-  }, [isAnalyzing]); // Check after analysis in case user adds key during use
+  const [selectedTab, setSelectedTab] = useState<'text' | 'image' | 'link'>('text');
+  const [mediaUrl, setMediaUrl] = useState('');
+  const [mediaType, setMediaType] = useState<'video' | 'audio' | 'image'>('image');
+  const [imageData, setImageData] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!inputText.trim()) return;
+    let contentToAnalyze = '';
+    let contentType: 'text' | 'image' | 'video' | 'audio' = 'text';
+    
+    // Determine what to analyze based on the active tab
+    if (selectedTab === 'text' && inputText.trim()) {
+      contentToAnalyze = inputText;
+      contentType = 'text';
+    } else if (selectedTab === 'image' && imageData) {
+      contentToAnalyze = imageData;
+      contentType = 'image';
+    } else if (selectedTab === 'link' && mediaUrl.trim()) {
+      contentToAnalyze = mediaUrl;
+      contentType = mediaType;
+    } else {
+      toast({
+        title: "Missing content",
+        description: "Please provide content to analyze",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setIsAnalyzing(true);
     setShowHint(false);
     setResult(null);
     setGeminiResponse(null);
     
-    if (useGemini && hasApiKey) {
+    if (useGemini) {
       try {
-        const response = await analyzeWithGemini(inputText);
+        const response = await analyzeWithGemini(contentToAnalyze, contentType);
         setGeminiResponse(response);
       } catch (error) {
         console.error('Error with Gemini analysis:', error);
+        toast({
+          title: "Analysis Failed",
+          description: error instanceof Error ? error.message : "An unexpected error occurred",
+          variant: "destructive"
+        });
       } finally {
         setIsAnalyzing(false);
       }
     } else {
       // Use built-in analyzer with slight delay for demo
       setTimeout(() => {
-        const analysisResult = analyzeContent(inputText);
+        const analysisResult = analyzeContent(contentToAnalyze);
         setResult(analysisResult);
         setIsAnalyzing(false);
       }, 1000);
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setImageData(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   // Example prompts for demonstration
@@ -62,22 +106,32 @@ const TextAnalyzer: React.FC = () => {
     "Check out this explicit content at example.com"
   ];
 
+  const exampleUrls = [
+    "https://example.com/potentially-harmful-video",
+    "https://example.com/suspicious-image.jpg",
+    "https://example.com/questionable-audio.mp3"
+  ];
+
   const handleExampleClick = (prompt: string) => {
-    setInputText(prompt);
+    if (selectedTab === 'text') {
+      setInputText(prompt);
+    } else if (selectedTab === 'link') {
+      setMediaUrl(prompt);
+    }
   };
 
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="mb-8 space-y-2">
-        <h2 className="text-2xl font-medium text-foreground">Content Analysis</h2>
-        <p className="text-muted-foreground">
-          Enter text to analyze for potentially harmful content
+        <h2 className="text-2xl font-medium text-white">Content Analysis</h2>
+        <p className="text-gray-400">
+          Analyze content for potentially harmful elements using advanced AI
         </p>
       </div>
       
       <div className="space-y-8">
-        <div className="flex items-center space-x-2 justify-end mb-6">
-          <Label htmlFor="gemini-toggle" className="text-sm text-muted-foreground">
+        <div className="flex items-center space-x-2 justify-end mb-4">
+          <Label htmlFor="gemini-toggle" className="text-sm text-gray-400">
             Use Gemini AI
           </Label>
           <Switch 
@@ -87,97 +141,222 @@ const TextAnalyzer: React.FC = () => {
           />
         </div>
         
-        {useGemini && (
-          <div className="mb-6">
-            <ApiKeyForm />
-          </div>
-        )}
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="relative">
-            <textarea
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              placeholder="Enter content to analyze..."
-              className="w-full h-40 px-4 py-3 rounded-xl border border-border/60 focus:border-primary focus:ring-1 focus:ring-primary/30 shadow-subtle bg-white/80 backdrop-blur-sm placeholder:text-muted-foreground/70 transition-all duration-200 resize-none"
-              disabled={isAnalyzing}
-            />
-            
-            <AnimatedTransition show={showHint} type="fade" className="absolute inset-0 pointer-events-none">
-              <div className="h-full flex flex-col items-center justify-center p-4 space-y-3">
-                <Info className="h-5 w-5 text-primary/60" />
-                <p className="text-sm text-center text-muted-foreground">
-                  Try entering text that might contain harmful content or prompt injections
-                </p>
-              </div>
-            </AnimatedTransition>
-          </div>
+        <Tabs 
+          defaultValue="text" 
+          className="w-full" 
+          onValueChange={(value) => setSelectedTab(value as 'text' | 'image' | 'link')}
+        >
+          <TabsList className="grid grid-cols-3 mb-6 bg-gray-800">
+            <TabsTrigger value="text" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+              <FileText className="h-4 w-4 mr-2" />
+              Text
+            </TabsTrigger>
+            <TabsTrigger value="image" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+              <Image className="h-4 w-4 mr-2" />
+              Image
+            </TabsTrigger>
+            <TabsTrigger value="link" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+              <Link className="h-4 w-4 mr-2" />
+              Media URL
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={isAnalyzing || !inputText.trim() || (useGemini && !hasApiKey)}
-              className={`inline-flex items-center space-x-2 px-6 py-2.5 rounded-full font-medium text-sm
-                ${isAnalyzing || !inputText.trim() || (useGemini && !hasApiKey)
-                  ? 'bg-muted text-muted-foreground cursor-not-allowed' 
-                  : 'bg-primary text-primary-foreground shadow-subtle hover:shadow-elevation transition-all duration-300 transform hover:-translate-y-0.5'
-                }`}
-            >
-              <span>Analyze</span>
-              <Send className="h-4 w-4" />
-            </button>
-          </div>
-        </form>
+          <TabsContent value="text" className="space-y-4">
+            <div className="relative">
+              <Textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Enter text to analyze..."
+                className="w-full h-40 px-4 py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 resize-none text-white"
+                disabled={isAnalyzing}
+              />
+              
+              <AnimatedTransition show={showHint && selectedTab === 'text'} type="fade" className="absolute inset-0 pointer-events-none">
+                <div className="h-full flex flex-col items-center justify-center p-4 space-y-3">
+                  <Info className="h-5 w-5 text-primary/60" />
+                  <p className="text-sm text-center text-gray-400">
+                    Enter text that you want to analyze for harmful content
+                  </p>
+                </div>
+              </AnimatedTransition>
+            </div>
+            
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-gray-400">Example prompts:</h3>
+              <div className="flex flex-wrap gap-2">
+                {examplePrompts.map((prompt, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleExampleClick(prompt)}
+                    className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+                  >
+                    {prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="image" className="space-y-6">
+            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/40 hover:bg-gray-800/60 transition-colors cursor-pointer" onClick={triggerFileInput}>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+              
+              {imageData ? (
+                <div className="w-full space-y-4">
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                    <img 
+                      src={imageData} 
+                      alt="Uploaded content" 
+                      className="w-full h-full object-cover" 
+                    />
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      <Button variant="outline" size="sm" onClick={triggerFileInput}>
+                        Replace
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-sm text-center text-gray-400">
+                    Image uploaded. Click to change.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <Upload className="h-10 w-10 text-gray-500 mb-4" />
+                  <p className="text-sm font-medium text-gray-400 mb-1">
+                    Click to upload an image
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Supported formats: JPG, PNG, GIF, WEBP
+                  </p>
+                </>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="link" className="space-y-4">
+            <div className="space-y-4">
+              <div className="flex flex-col space-y-2">
+                <Label htmlFor="media-url" className="text-sm text-gray-400">
+                  Enter URL to analyze
+                </Label>
+                <Textarea
+                  id="media-url"
+                  value={mediaUrl}
+                  onChange={(e) => setMediaUrl(e.target.value)}
+                  placeholder="https://example.com/content"
+                  className="w-full px-4 py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 text-white resize-none h-24"
+                  disabled={isAnalyzing}
+                />
+              </div>
+              
+              <div className="flex flex-col space-y-2">
+                <Label className="text-sm text-gray-400">
+                  Content type
+                </Label>
+                <div className="flex space-x-2">
+                  <Button
+                    type="button"
+                    variant={mediaType === 'image' ? 'default' : 'outline'}
+                    onClick={() => setMediaType('image')}
+                    className="flex-1"
+                  >
+                    <Image className="h-4 w-4 mr-2" />
+                    Image
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={mediaType === 'video' ? 'default' : 'outline'}
+                    onClick={() => setMediaType('video')}
+                    className="flex-1"
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Video
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={mediaType === 'audio' ? 'default' : 'outline'}
+                    onClick={() => setMediaType('audio')}
+                    className="flex-1"
+                  >
+                    <Music className="h-4 w-4 mr-2" />
+                    Audio
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium text-gray-400">Example URLs:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {exampleUrls.map((url, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleExampleClick(url)}
+                      className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+                    >
+                      {url.length > 30 ? url.substring(0, 30) + '...' : url}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
         
-        <div className="space-y-3">
-          <h3 className="text-sm font-medium text-muted-foreground">Example prompts:</h3>
-          <div className="flex flex-wrap gap-2">
-            {examplePrompts.map((prompt, index) => (
-              <button
-                key={index}
-                onClick={() => handleExampleClick(prompt)}
-                className="text-xs px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-              >
-                {prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt}
-              </button>
-            ))}
-          </div>
+        <div className="flex justify-end">
+          <Button
+            onClick={handleSubmit}
+            disabled={isAnalyzing || 
+              (selectedTab === 'text' && !inputText.trim()) || 
+              (selectedTab === 'image' && !imageData) || 
+              (selectedTab === 'link' && !mediaUrl.trim())}
+            className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-full font-medium text-sm"
+            variant="default"
+          >
+            <span>Analyze</span>
+            <Send className="h-4 w-4" />
+          </Button>
         </div>
         
         <div className="relative min-h-[200px]">
-          <h3 className="text-lg font-medium text-foreground mb-4">Analysis Results</h3>
+          <h3 className="text-lg font-medium text-white mb-4">Analysis Results</h3>
           
           {/* Show built-in analysis result */}
           {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
           {/* Show Gemini response */}
           {useGemini && (
-            <div className="rounded-2xl bg-white/40 backdrop-blur-sm border border-border/30 p-6">
+            <div className="rounded-2xl bg-gray-800/40 backdrop-blur-sm border border-gray-800/30 p-6">
               {isAnalyzing ? (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4">
                   <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-muted-foreground">Analyzing with Gemini AI...</p>
+                  <p className="text-gray-400">Analyzing with Gemini AI...</p>
                 </div>
               ) : geminiResponse ? (
-                <div className="prose prose-sm max-w-none">
-                  <pre className="whitespace-pre-wrap rounded-lg bg-gray-50 p-4 overflow-auto text-sm">
+                <div className="prose prose-sm max-w-none prose-invert">
+                  <div className="whitespace-pre-wrap rounded-lg bg-gray-900 p-4 overflow-auto text-sm text-gray-300">
                     {geminiResponse}
-                  </pre>
+                  </div>
                 </div>
               ) : (
                 <div className="text-center space-y-2 py-8">
-                  <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mx-auto" />
-                  <p className="text-muted-foreground">No analysis results yet</p>
+                  <AlertTriangle className="h-8 w-8 text-gray-600 mx-auto" />
+                  <p className="text-gray-400">No analysis results yet</p>
                 </div>
               )}
             </div>
           )}
           
           {!isAnalyzing && !result && !geminiResponse && (
-            <div className="rounded-2xl bg-muted/40 border border-border/30 p-6 flex items-center justify-center">
+            <div className="rounded-2xl bg-gray-800/40 border border-gray-800/30 p-6 flex items-center justify-center">
               <div className="text-center space-y-2">
-                <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mx-auto" />
-                <p className="text-muted-foreground">No analysis results yet</p>
+                <AlertTriangle className="h-8 w-8 text-gray-600 mx-auto" />
+                <p className="text-gray-400">No analysis results yet</p>
               </div>
             </div>
           )}

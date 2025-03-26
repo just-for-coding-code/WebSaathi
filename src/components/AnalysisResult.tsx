@@ -17,7 +17,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
 }) => {
   if (isAnalyzing) {
     return (
-      <div className="rounded-2xl bg-white/70 shadow-glass p-6 backdrop-blur-sm border border-border/30 animate-pulse">
+      <div className="rounded-2xl bg-gray-800/60 shadow-glass p-6 backdrop-blur-sm border border-gray-700/30 animate-pulse">
         <div className="flex items-center justify-center h-40">
           <div className="relative">
             <Shield className="h-12 w-12 text-primary/40 animate-pulse" />
@@ -25,7 +25,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
               <div className="h-4 w-4 rounded-full bg-primary animate-ping" />
             </div>
           </div>
-          <div className="ml-4 text-xl font-medium text-foreground/60">
+          <div className="ml-4 text-xl font-medium text-gray-300/60">
             Analyzing content...
           </div>
         </div>
@@ -53,19 +53,19 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
   const getBgColor = () => {
     switch (result.category) {
       case 'hate_speech':
-        return 'bg-gradient-to-br from-white to-harm-hate/5';
+        return 'bg-gradient-to-br from-gray-800 to-harm-hate/10';
       case 'misinformation':
-        return 'bg-gradient-to-br from-white to-harm-misinformation/5';
+        return 'bg-gradient-to-br from-gray-800 to-harm-misinformation/10';
       case 'cyberbullying':
-        return 'bg-gradient-to-br from-white to-harm-cyberbullying/5';
+        return 'bg-gradient-to-br from-gray-800 to-harm-cyberbullying/10';
       case 'explicit_content':
-        return 'bg-gradient-to-br from-white to-harm-explicit/5';
+        return 'bg-gradient-to-br from-gray-800 to-harm-explicit/10';
       case 'prompt_injection':
-        return 'bg-gradient-to-br from-white to-harm-injection/5';
+        return 'bg-gradient-to-br from-gray-800 to-harm-injection/10';
       case 'safe':
-        return 'bg-gradient-to-br from-white to-harm-safe/5';
+        return 'bg-gradient-to-br from-gray-800 to-harm-safe/10';
       default:
-        return 'bg-white';
+        return 'bg-gray-800';
     }
   };
 
@@ -77,7 +77,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
       case 'explicit_content': return 'text-harm-explicit';
       case 'prompt_injection': return 'text-harm-injection';
       case 'safe': return 'text-harm-safe';
-      default: return 'text-foreground';
+      default: return 'text-white';
     }
   };
 
@@ -105,18 +105,18 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
 
   return (
     <AnimatedTransition show={!!result} type="scale" className="overflow-hidden">
-      <div className={`rounded-2xl shadow-glass p-6 backdrop-blur-sm border border-border/30 ${getBgColor()}`}>
+      <div className={`rounded-2xl shadow-glass p-6 backdrop-blur-sm border border-gray-700/30 ${getBgColor()}`}>
         <div className="flex items-center">
           {getStatusIcon()}
           <div className="ml-3">
-            <h3 className="text-lg font-medium text-foreground">
+            <h3 className="text-lg font-medium text-white">
               {getActionText()}
             </h3>
             <div className="flex items-center mt-1 space-x-1">
               <span className={`text-sm font-medium ${getCategoryColor()}`}>
                 {getCategoryName()}
               </span>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-sm text-gray-400">
                 • Severity: {result.severityScore}/10
               </span>
             </div>
@@ -125,20 +125,20 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
 
         <div className="mt-6 space-y-4">
           <div>
-            <h4 className="text-sm font-medium text-foreground">Reason</h4>
-            <p className="mt-1 text-sm text-muted-foreground">{result.reason}</p>
+            <h4 className="text-sm font-medium text-white">Reason</h4>
+            <p className="mt-1 text-sm text-gray-400">{result.reason}</p>
           </div>
 
           {result.complianceCheck && (
             <div>
-              <h4 className="text-sm font-medium text-foreground">Compliance Reference</h4>
-              <p className="mt-1 text-sm text-muted-foreground">{result.complianceCheck}</p>
+              <h4 className="text-sm font-medium text-white">Compliance Reference</h4>
+              <p className="mt-1 text-sm text-gray-400">{result.complianceCheck}</p>
             </div>
           )}
 
           <div>
-            <h4 className="text-sm font-medium text-foreground">Confidence</h4>
-            <div className="mt-2 relative w-full h-2 bg-muted rounded-full overflow-hidden">
+            <h4 className="text-sm font-medium text-white">Confidence</h4>
+            <div className="mt-2 relative w-full h-2 bg-gray-700 rounded-full overflow-hidden">
               <div 
                 className={`absolute left-0 top-0 h-full rounded-full ${
                   result.category === 'safe' ? 'bg-harm-safe' : `bg-${getCategoryColor().split('-')[1]}`
@@ -146,7 +146,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
                 style={{ width: `${result.confidence * 100}%` }}
               />
             </div>
-            <div className="mt-1 text-xs text-right text-muted-foreground">
+            <div className="mt-1 text-xs text-right text-gray-400">
               {Math.round(result.confidence * 100)}%
             </div>
           </div>

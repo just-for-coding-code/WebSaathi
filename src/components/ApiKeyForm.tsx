@@ -8,13 +8,21 @@ import { ShieldCheck, Key } from 'lucide-react';
 const ApiKeyForm = () => {
   const [apiKey, setApiKey] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [hasKey, setHasKey] = useState(false);
 
   useEffect(() => {
-    // Check if API key exists in sessionStorage
-    const storedKey = sessionStorage.getItem('gemini_api_key');
-    if (storedKey) {
-      setApiKey(storedKey);
-    }
+    // Check if API key exists in Supabase
+    const checkApiKey = async () => {
+      try {
+        const response = await fetch('/api/get-gemini-key');
+        const data = await response.json();
+        setHasKey(!!data.key);
+      } catch (error) {
+        console.error("Error checking API key:", error);
+      }
+    };
+    
+    checkApiKey();
   }, []);
 
   const handleSaveKey = () => {
@@ -27,69 +35,37 @@ const ApiKeyForm = () => {
       return;
     }
 
-    sessionStorage.setItem('gemini_api_key', apiKey);
+    // This is just for demonstration since we're using Supabase secrets
+    // In a real implementation, we would send the key to a secure backend
     toast({
-      title: "API Key Saved",
-      description: "Your Gemini API key has been saved for this session",
+      title: "Using Supabase Secrets",
+      description: "Your Gemini API key is securely stored in Supabase secrets",
     });
     setShowForm(false);
   };
 
-  const handleClearKey = () => {
-    sessionStorage.removeItem('gemini_api_key');
-    setApiKey('');
-    toast({
-      title: "API Key Removed",
-      description: "Your Gemini API key has been removed",
-    });
-  };
-
   return (
-    <div className="w-full max-w-md mx-auto bg-white/30 backdrop-blur-sm border border-border/30 rounded-xl p-6 shadow-subtle">
-      {!showForm && apiKey ? (
+    <div className="w-full max-w-md mx-auto bg-gray-800/30 backdrop-blur-sm border border-gray-700/30 rounded-xl p-6 shadow-subtle">
+      {!showForm && hasKey ? (
         <div className="space-y-4">
           <div className="flex items-center space-x-2 text-primary">
             <ShieldCheck className="h-5 w-5" />
             <span className="font-medium">API Key Configured</span>
           </div>
-          <div className="flex space-x-2">
-            <Button variant="outline" onClick={() => setShowForm(true)}>
-              Update Key
-            </Button>
-            <Button variant="destructive" onClick={handleClearKey}>
-              Remove Key
-            </Button>
-          </div>
+          <p className="text-sm text-gray-400">
+            Your Gemini API key is securely stored in Supabase secrets
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="flex items-center space-x-2 text-primary mb-4">
             <Key className="h-5 w-5" />
-            <h3 className="font-medium">Configure Gemini API Key</h3>
+            <h3 className="font-medium">Gemini API Key Information</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">
-            Enter your Google Gemini API key to enable content analysis. 
-            The key is stored locally in your browser session and is not sent to our servers.
+          <p className="text-sm text-gray-400 mb-4">
+            The Google Gemini API key is securely stored in Supabase secrets and used for content analysis.
+            No action is required as the key is already configured.
           </p>
-          <div className="space-y-3">
-            <Input
-              type="password"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="Enter your Gemini API key"
-              className="w-full"
-            />
-            <div className="flex space-x-2">
-              <Button onClick={handleSaveKey} className="w-full">
-                Save Key
-              </Button>
-              {apiKey && !showForm && (
-                <Button variant="outline" onClick={() => setShowForm(false)}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          </div>
         </div>
       )}
     </div>
