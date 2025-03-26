@@ -56,6 +56,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    scroll-behavior: smooth;
   }
 }
 
@@ -79,6 +80,15 @@
   .animate-pulse-soft {
     animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
+  
+  /* Fix for disappearing elements */
+  .opacity-0 {
+    opacity: 0;
+  }
+  
+  .opacity-100 {
+    opacity: 1;
+  }
 }
 
 @keyframes pulse {
@@ -88,6 +98,25 @@
   50% {
     opacity: 0.5;
   }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.5s ease-out forwards;
+}
+
+.scroll-animate {
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
 .prose h3 {
@@ -104,4 +133,9 @@
 
 .prose li {
   @apply mb-1;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }

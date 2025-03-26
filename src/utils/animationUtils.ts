@@ -34,13 +34,27 @@ export const smoothScrollTo = (elementId: string): void => {
   }
 };
 
-// Intersection observer for scroll-triggered animations
+// Improved intersection observer for scroll-triggered animations
 export const createScrollObserver = (
   callback: IntersectionObserverCallback,
   options: IntersectionObserverInit = { 
     threshold: 0.1,
-    rootMargin: '0px 0px -10% 0px'
+    rootMargin: '0px 0px -5% 0px'
   }
 ): IntersectionObserver => {
   return new IntersectionObserver(callback, options);
+};
+
+// Helper to ensure elements remain visible after animation
+export const applyPersistentAnimation = (element: Element): void => {
+  // After animating in, make sure the element stays visible
+  element.classList.add('animate-slide-in');
+  
+  const handleAnimationEnd = () => {
+    element.removeEventListener('animationend', handleAnimationEnd);
+    element.classList.remove('animate-slide-in');
+    element.classList.add('opacity-100'); // Keep element visible
+  };
+  
+  element.addEventListener('animationend', handleAnimationEnd);
 };

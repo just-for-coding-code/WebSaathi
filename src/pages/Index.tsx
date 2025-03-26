@@ -5,7 +5,7 @@ import Layout from '../components/Layout';
 import TextAnalyzer from '../components/TextAnalyzer';
 import CategoryCard from '../components/CategoryCard';
 import AnimatedTransition from '../components/AnimatedTransition';
-import { createScrollObserver } from '../utils/animationUtils';
+import { createScrollObserver, applyPersistentAnimation } from '../utils/animationUtils';
 import { HarmCategory } from '../utils/analyzeContent';
 
 const Index = () => {
@@ -14,21 +14,37 @@ const Index = () => {
   const aboutRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
+    // Fixed animation observer that properly handles elements as they come into view
     const animateOnScroll = (entries: IntersectionObserverEntry[]) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
-          entry.target.classList.add('animate-slide-in');
-          observer.unobserve(entry.target);
+          applyPersistentAnimation(entry.target);
+          
+          // Optional: unobserve if you want the animation to happen only once
+          // observer.unobserve(entry.target);
         }
       });
     };
 
     const observer = createScrollObserver(animateOnScroll);
     
+    // Select all elements that should animate on scroll
     const elements = document.querySelectorAll('.scroll-animate');
-    elements.forEach(el => observer.observe(el));
+    elements.forEach(el => {
+      // Initially hide elements (but don't do this for elements that are already in view)
+      const rect = el.getBoundingClientRect();
+      const isInViewport = rect.top <= window.innerHeight && rect.bottom >= 0;
+      
+      if (!isInViewport) {
+        el.classList.add('opacity-0');
+      }
+      
+      observer.observe(el);
+    });
     
-    return () => elements.forEach(el => observer.unobserve(el));
+    return () => {
+      elements.forEach(el => observer.unobserve(el));
+    };
   }, []);
 
   const categories: HarmCategory[] = [
@@ -92,7 +108,7 @@ const Index = () => {
       {/* Features Section */}
       <section id="features" ref={featuresRef} className="py-16 scroll-mt-24">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12 scroll-animate opacity-0">
+          <div className="text-center mb-12 scroll-animate">
             <h2 className="text-3xl font-medium text-foreground mb-4">Key Features</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our system utilizes advanced AI technologies to provide comprehensive content safety
@@ -103,7 +119,7 @@ const Index = () => {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="relative overflow-hidden rounded-xl bg-white/50 backdrop-blur-sm p-6 border border-border/30 shadow-subtle hover:shadow-elevation transition-all duration-300 scroll-animate opacity-0"
+                className="relative overflow-hidden rounded-xl bg-white/50 backdrop-blur-sm p-6 border border-border/30 shadow-subtle hover:shadow-elevation transition-all duration-300 scroll-animate"
                 style={{ transitionDelay: `${100 * index}ms` }}
               >
                 <div className="absolute -inset-px rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" 
@@ -126,14 +142,14 @@ const Index = () => {
       {/* Content Analyzer Section */}
       <section id="analyzer" className="py-16 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-12 scroll-animate opacity-0">
+          <div className="text-center mb-12 scroll-animate">
             <h2 className="text-3xl font-medium text-foreground mb-4">Content Analyzer</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Enter text to analyze for potentially harmful content or prompt injections
             </p>
           </div>
           
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl border border-border/30 shadow-glass p-6 md:p-8 scroll-animate opacity-0">
+          <div className="bg-white/20 backdrop-blur-sm rounded-2xl border border-border/30 shadow-glass p-6 md:p-8 scroll-animate">
             <TextAnalyzer />
           </div>
         </div>
@@ -142,7 +158,7 @@ const Index = () => {
       {/* Harm Categories Section */}
       <section id="categories" ref={categoriesRef} className="py-16 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4">
-          <div className="text-center mb-12 scroll-animate opacity-0">
+          <div className="text-center mb-12 scroll-animate">
             <h2 className="text-3xl font-medium text-foreground mb-4">Harm Categories</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Our system detects and classifies various types of harmful online content
@@ -153,7 +169,7 @@ const Index = () => {
             {categories.map((category, index) => (
               <div 
                 key={category} 
-                className="scroll-animate opacity-0"
+                className="scroll-animate"
                 style={{ transitionDelay: `${100 * index}ms` }}
               >
                 <CategoryCard category={category} />
@@ -166,14 +182,14 @@ const Index = () => {
       {/* About Section */}
       <section id="about" ref={aboutRef} className="py-16 scroll-mt-24">
         <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12 scroll-animate opacity-0">
+          <div className="text-center mb-12 scroll-animate">
             <h2 className="text-3xl font-medium text-foreground mb-4">About the System</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Designed with precision and elegance to provide comprehensive content safety
             </p>
           </div>
           
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl border border-border/30 shadow-glass p-6 md:p-8 scroll-animate opacity-0">
+          <div className="bg-white/20 backdrop-blur-sm rounded-2xl border border-border/30 shadow-glass p-6 md:p-8 scroll-animate">
             <div className="prose prose-sm max-w-none text-foreground">
               <p>
                 Our content moderation system is designed to detect, classify, and mitigate harmful online content while defending against adversarial attacks. Using advanced AI technologies, the system analyzes text, images, audio, and documents for a variety of harmful content types.

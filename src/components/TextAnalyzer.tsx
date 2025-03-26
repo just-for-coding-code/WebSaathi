@@ -2,16 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import { Send, AlertTriangle, Info } from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
+import { analyzeWithGemini } from '../utils/geminiApi';
 import AnalysisResult from './AnalysisResult';
 import AnimatedTransition from './AnimatedTransition';
+import ApiKeyForm from './ApiKeyForm';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const TextAnalyzer: React.FC = () => {
   const [inputText, setInputText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResultType | null>(null);
   const [showHint, setShowHint] = useState(true);
+  const [useGemini, setUseGemini] = useState(false);
+  const [geminiResponse, setGeminiResponse] = useState<string | null>(null);
+  const [hasApiKey, setHasApiKey] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    // Check if API key exists
+    const apiKey = sessionStorage.getItem('gemini_api_key');
+    setHasApiKey(!!apiKey);
+  }, [isAnalyzing]); // Check after analysis in case user adds key during use
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!inputText.trim()) return;
@@ -19,13 +32,25 @@ const TextAnalyzer: React.FC = () => {
     setIsAnalyzing(true);
     setShowHint(false);
     setResult(null);
+    setGeminiResponse(null);
     
-    // Simulate loading for demo purposes
-    setTimeout(() => {
-      const analysisResult = analyzeContent(inputText);
-      setResult(analysisResult);
-      setIsAnalyzing(false);
-    }, 1500);
+    if (useGemini && hasApiKey) {
+      try {
+        const response = await analyzeWithGemini(inputText);
+        setGeminiResponse(response);
+      } catch (error) {
+        console.error('Error with Gemini analysis:', error);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    } else {
+      // Use built-in analyzer with slight delay for demo
+      setTimeout(() => {
+        const analysisResult = analyzeContent(inputText);
+        setResult(analysisResult);
+        setIsAnalyzing(false);
+      }, 1000);
+    }
   };
 
   // Example prompts for demonstration
@@ -51,6 +76,23 @@ const TextAnalyzer: React.FC = () => {
       </div>
       
       <div className="space-y-8">
+        <div className="flex items-center space-x-2 justify-end mb-6">
+          <Label htmlFor="gemini-toggle" className="text-sm text-muted-foreground">
+            Use Gemini AI
+          </Label>
+          <Switch 
+            id="gemini-toggle" 
+            checked={useGemini} 
+            onCheckedChange={setUseGemini} 
+          />
+        </div>
+        
+        {useGemini && (
+          <div className="mb-6">
+            <ApiKeyForm />
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="relative">
             <textarea
@@ -74,9 +116,9 @@ const TextAnalyzer: React.FC = () => {
           <div className="flex justify-end">
             <button
               type="submit"
-              disabled={isAnalyzing || !inputText.trim()}
+              disabled={isAnalyzing || !inputText.trim() || (useGemini && !hasApiKey)}
               className={`inline-flex items-center space-x-2 px-6 py-2.5 rounded-full font-medium text-sm
-                ${isAnalyzing || !inputText.trim()
+                ${isAnalyzing || !inputText.trim() || (useGemini && !hasApiKey)
                   ? 'bg-muted text-muted-foreground cursor-not-allowed' 
                   : 'bg-primary text-primary-foreground shadow-subtle hover:shadow-elevation transition-all duration-300 transform hover:-translate-y-0.5'
                 }`}
@@ -105,9 +147,33 @@ const TextAnalyzer: React.FC = () => {
         <div className="relative min-h-[200px]">
           <h3 className="text-lg font-medium text-foreground mb-4">Analysis Results</h3>
           
-          <AnalysisResult result={result} isAnalyzing={isAnalyzing} />
+          {/* Show built-in analysis result */}
+          {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
-          {!isAnalyzing && !result && (
+          {/* Show Gemini response */}
+          {useGemini && (
+            <div className="rounded-2xl bg-white/40 backdrop-blur-sm border border-border/30 p-6">
+              {isAnalyzing ? (
+                <div className="flex flex-col items-center justify-center py-10 space-y-4">
+                  <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-muted-foreground">Analyzing with Gemini AI...</p>
+                </div>
+              ) : geminiResponse ? (
+                <div className="prose prose-sm max-w-none">
+                  <pre className="whitespace-pre-wrap rounded-lg bg-gray-50 p-4 overflow-auto text-sm">
+                    {geminiResponse}
+                  </pre>
+                </div>
+              ) : (
+                <div className="text-center space-y-2 py-8">
+                  <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mx-auto" />
+                  <p className="text-muted-foreground">No analysis results yet</p>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {!isAnalyzing && !result && !geminiResponse && (
             <div className="rounded-2xl bg-muted/40 border border-border/30 p-6 flex items-center justify-center">
               <div className="text-center space-y-2">
                 <AlertTriangle className="h-8 w-8 text-muted-foreground/40 mx-auto" />
