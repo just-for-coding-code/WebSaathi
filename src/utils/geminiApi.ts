@@ -37,7 +37,18 @@ export interface GeminiResponse {
 export const analyzeWithGemini = async (content: string, contentType: 'text' | 'image' | 'video' | 'audio'): Promise<string> => {
   try {
     // Get the API key from Supabase Edge Function
-    const response = await fetch('/api/get-gemini-key');
+    // Use the correct URL for the edge function
+    const response = await fetch('https://hardtowtofuuzejggihn.supabase.co/functions/v1/get-gemini-key', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API key retrieval failed: ${response.status} ${response.statusText}`);
+    }
+    
     const data = await response.json();
     
     if (!data.key) {
@@ -65,6 +76,7 @@ export const analyzeWithGemini = async (content: string, contentType: 'text' | '
       requestBody = createTextAnalysisRequest(content);
     }
 
+    console.log("Sending request to Gemini API...");
     const geminiResponse = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-exp-03-25:generateContent?key=${apiKey}`,
       {
@@ -78,7 +90,7 @@ export const analyzeWithGemini = async (content: string, contentType: 'text' | '
 
     if (!geminiResponse.ok) {
       const errorData = await geminiResponse.json();
-      throw new Error(errorData.error?.message || "Failed to analyze content");
+      throw new Error(errorData.error?.message || `Failed to analyze content: ${geminiResponse.status} ${geminiResponse.statusText}`);
     }
 
     const responseData: GeminiResponse = await geminiResponse.json();
