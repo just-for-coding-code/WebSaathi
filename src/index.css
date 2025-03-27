@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -57,10 +58,6 @@
   body {
     @apply bg-background text-foreground;
     scroll-behavior: smooth;
-  }
-  
-  ::selection {
-    @apply bg-primary/30 text-white;
   }
 }
 
@@ -122,47 +119,6 @@
   .interactive-btn:hover::after {
     @apply opacity-10;
   }
-  
-  /* Glassmorphism effects */
-  .glass-panel {
-    @apply bg-black/20 backdrop-blur-md border border-white/10;
-  }
-  
-  .glass-card {
-    @apply bg-gray-900/70 backdrop-blur-md border border-gray-700/50 shadow-xl;
-  }
-  
-  /* Glowing effect utilities */
-  .glow-sm {
-    box-shadow: 0 0 10px rgba(155, 135, 245, 0.5);
-  }
-  
-  .glow-md {
-    box-shadow: 0 0 20px rgba(155, 135, 245, 0.5);
-  }
-  
-  .glow-lg {
-    box-shadow: 0 0 30px rgba(155, 135, 245, 0.5);
-  }
-  
-  .hover-glow {
-    @apply transition-shadow duration-300;
-  }
-  
-  .hover-glow:hover {
-    box-shadow: 0 0 15px rgba(155, 135, 245, 0.7);
-  }
-  
-  /* Animated gradient text */
-  .animated-gradient-text {
-    background-size: 300% 300%;
-    animation: gradient-shift 8s ease infinite;
-  }
-  
-  .animate-gradient-shift {
-    background-size: 300% 300%;
-    animation: gradient-shift 8s ease infinite;
-  }
 }
 
 @keyframes pulse {
@@ -191,26 +147,6 @@
   }
   50% {
     box-shadow: 0 0 30px rgba(155, 135, 245, 0.6);
-  }
-}
-
-@keyframes beam {
-  0% {
-    opacity: 0.3;
-    transform: translateY(0) scale(1);
-  }
-  100% {
-    opacity: 0.8;
-    transform: translateY(-10px) scale(1.05);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
   }
 }
 
@@ -290,46 +226,4 @@ pre {
   will-change: opacity, transform;
   backface-visibility: hidden;
   transform: translateZ(0);
-}
-
-/* Shimmering effect for borders and text */
-.shimmer {
-  background: linear-gradient(
-    90deg, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.2) 50%, 
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite;
-}
-
-.text-shimmer {
-  position: relative;
-}
-
-.text-shimmer::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg, 
-    rgba(255, 255, 255, 0) 0%, 
-    rgba(255, 255, 255, 0.1) 50%, 
-    rgba(255, 255, 255, 0) 100%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 3s infinite;
-}
-
-@keyframes gradient-shift {
-  0%, 100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
 }
