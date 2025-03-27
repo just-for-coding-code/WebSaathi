@@ -81,7 +81,7 @@ export const analyzeWithGemini = async (content: string, contentType: 'text' | '
 
     console.log("Sending request to Gemini API...");
     const geminiResponse = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-exp-03-25:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro-exp-03-25:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {
