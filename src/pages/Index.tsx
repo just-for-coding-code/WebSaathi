@@ -1,10 +1,11 @@
 
 import React, { useEffect, useRef } from 'react';
-import { Shield, Info, AlertTriangle, MessageSquareX, UserX, EyeOff, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Shield, Info, AlertTriangle, MessageSquareX, UserX, EyeOff, ShieldAlert, ShieldCheck, Download, ExternalLink } from 'lucide-react';
 import Layout from '../components/Layout';
 import TextAnalyzer from '../components/TextAnalyzer';
 import CategoryCard from '../components/CategoryCard';
 import AnimatedTransition from '../components/AnimatedTransition';
+import { Button } from '@/components/ui/button';
 import { createScrollObserver, applyPersistentAnimation } from '../utils/animationUtils';
 import { HarmCategory } from '../utils/analyzeContent';
 
@@ -12,6 +13,7 @@ const Index = () => {
   const featuresRef = useRef<HTMLElement>(null);
   const categoriesRef = useRef<HTMLElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
+  const extensionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     // Fixed animation observer that properly handles elements as they come into view
@@ -19,9 +21,6 @@ const Index = () => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           applyPersistentAnimation(entry.target);
-          
-          // Optional: unobserve if you want the animation to happen only once
-          // observer.unobserve(entry.target);
         }
       });
     };
@@ -37,6 +36,8 @@ const Index = () => {
       
       if (!isInViewport) {
         el.classList.add('opacity-0');
+        el.classList.add('transform');
+        el.classList.add('translate-y-8');
       }
       
       observer.observe(el);
@@ -77,27 +78,34 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="py-12 md:py-24">
-        <div className="flex flex-col items-center text-center space-y-8 max-w-4xl mx-auto px-4">
+      <section className="py-16 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-blue-500/5 mix-blend-multiply"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-gray-950 to-transparent"></div>
+          <div className="absolute top-0 left-0 w-full h-64 bg-blue-500/5 blur-3xl opacity-20 transform -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-full h-64 bg-purple-500/5 blur-3xl opacity-20 transform translate-y-1/2"></div>
+        </div>
+
+        <div className="flex flex-col items-center text-center space-y-10 max-w-4xl mx-auto px-4 relative z-10">
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={100}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-foreground">
-              Intelligent Content <span className="text-primary">Safety</span> System
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-primary">WebSaathi:</span> Content Safety Intelligence
             </h1>
           </AnimatedTransition>
           
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={300}>
-            <p className="text-xl text-muted-foreground max-w-2xl">
-              Detect, classify, and mitigate harmful online content with precision and elegance
+            <p className="text-xl text-gray-300 max-w-2xl font-light">
+              Detect, classify, and mitigate harmful online content with precision and elegance using advanced AI technology
             </p>
           </AnimatedTransition>
           
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={500}>
-            <div className="relative w-full max-w-lg h-24">
+            <div className="relative w-full max-w-lg mt-4">
               <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-16 rounded-full bg-primary/10 filter blur-xl"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <a href="#analyzer" className="inline-flex items-center space-x-2 px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-elevation hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                  <span className="text-base font-medium">Try it Now</span>
-                  <Shield className="h-5 w-5" />
+                <a href="#analyzer" className="inline-flex items-center space-x-2 px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300">
+                  <span className="text-base font-medium">Try Analyzer</span>
+                  <Shield className="h-5 w-5 ml-2" />
                 </a>
               </div>
             </div>
@@ -106,12 +114,12 @@ const Index = () => {
       </section>
       
       {/* Features Section */}
-      <section id="features" ref={featuresRef} className="py-16 scroll-mt-24">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-medium text-foreground mb-4">Key Features</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Our system utilizes advanced AI technologies to provide comprehensive content safety
+      <section id="features" ref={featuresRef} className="py-20 scroll-mt-24 bg-gray-900/50 rounded-3xl my-8">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-16 scroll-animate">
+            <h2 className="text-3xl font-bold text-white mb-4">Key Features</h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Our intelligent system utilizes advanced AI technologies to provide comprehensive content safety
             </p>
           </div>
           
@@ -119,48 +127,118 @@ const Index = () => {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="relative overflow-hidden rounded-xl bg-white/50 backdrop-blur-sm p-6 border border-border/30 shadow-subtle hover:shadow-elevation transition-all duration-300 scroll-animate"
+                className="relative overflow-hidden rounded-xl bg-gray-800/50 backdrop-blur-sm p-8 border border-gray-700/30 shadow-xl hover:shadow-primary/5 transition-all duration-300 group scroll-animate"
                 style={{ transitionDelay: `${100 * index}ms` }}
               >
-                <div className="absolute -inset-px rounded-xl opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none" 
-                  style={{ 
-                    background: 'radial-gradient(600px circle at var(--x, 0px) var(--y, 0px), rgba(104, 182, 255, 0.1), transparent 40%)' 
-                  }} 
-                />
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 
-                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-medium text-foreground mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+                <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
+                <p className="text-gray-300">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
       
+      {/* WebSaathi Extension Section */}
+      <section id="extension" ref={extensionRef} className="py-20 scroll-mt-24 my-8">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center gap-12">
+            <div className="flex-1 scroll-animate">
+              <h2 className="text-3xl font-bold text-white mb-6">WebSaathi Browser Extension</h2>
+              <p className="text-gray-300 mb-6">
+                Take WebSaathi's content safety features with you across the web. Our browser extension provides real-time analysis of content you encounter while browsing.
+              </p>
+              <ul className="space-y-4 mb-8">
+                <li className="flex items-start">
+                  <ShieldCheck className="h-5 w-5 text-primary mt-1 mr-3" />
+                  <span className="text-gray-300">Real-time content analysis while browsing</span>
+                </li>
+                <li className="flex items-start">
+                  <ShieldCheck className="h-5 w-5 text-primary mt-1 mr-3" />
+                  <span className="text-gray-300">Block harmful content before it loads</span>
+                </li>
+                <li className="flex items-start">
+                  <ShieldCheck className="h-5 w-5 text-primary mt-1 mr-3" />
+                  <span className="text-gray-300">Customizable safety levels for different sites</span>
+                </li>
+              </ul>
+              
+              <div className="flex flex-wrap gap-4">
+                <Button className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Download Extension
+                </Button>
+                <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2">
+                  <ExternalLink className="h-4 w-4" />
+                  Learn More
+                </Button>
+              </div>
+            </div>
+            
+            <div className="flex-1 scroll-animate">
+              <div className="relative rounded-xl overflow-hidden shadow-2xl border border-gray-700/50">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-blue-500/10 mix-blend-overlay"></div>
+                <div className="aspect-video bg-gray-800 rounded-xl p-6 flex items-center justify-center">
+                  <div className="w-full max-w-sm">
+                    <div className="h-8 bg-gray-700 rounded-t-lg flex items-center px-3 space-x-1">
+                      <div className="h-3 w-3 rounded-full bg-red-500"></div>
+                      <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+                      <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                      <div className="ml-3 h-5 bg-gray-600 rounded w-64"></div>
+                    </div>
+                    <div className="bg-gray-900 p-4 rounded-b-lg shadow-inner">
+                      <div className="flex items-center mb-4">
+                        <div className="h-8 w-8 rounded-full bg-primary/30 flex items-center justify-center">
+                          <Shield className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="ml-3">
+                          <div className="h-4 bg-gray-700 rounded w-32"></div>
+                          <div className="h-3 mt-1 bg-gray-700/70 rounded w-20"></div>
+                        </div>
+                        <div className="ml-auto">
+                          <div className="h-6 w-12 bg-primary rounded-full"></div>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="h-3 bg-gray-700 rounded w-full"></div>
+                        <div className="h-3 bg-gray-700/70 rounded w-5/6"></div>
+                        <div className="h-3 bg-gray-700/50 rounded w-4/5"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
       {/* Content Analyzer Section */}
-      <section id="analyzer" className="py-16 scroll-mt-24">
+      <section id="analyzer" className="py-20 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-medium text-foreground mb-4">Content Analyzer</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              Enter text to analyze for potentially harmful content or prompt injections
+            <h2 className="text-3xl font-bold text-white mb-4">Content Analysis Tool</h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Upload or paste text, images, videos, or audio to analyze for potentially harmful content
             </p>
           </div>
           
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl border border-border/30 shadow-glass p-6 md:p-8 scroll-animate">
+          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
             <TextAnalyzer />
           </div>
         </div>
       </section>
       
       {/* Harm Categories Section */}
-      <section id="categories" ref={categoriesRef} className="py-16 scroll-mt-24">
+      <section id="categories" ref={categoriesRef} className="py-20 scroll-mt-24 bg-gray-900/50 rounded-3xl my-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-medium text-foreground mb-4">Harm Categories</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-4">Content Risk Categories</h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
               Our system detects and classifies various types of harmful online content
             </p>
           </div>
@@ -180,19 +258,19 @@ const Index = () => {
       </section>
       
       {/* About Section */}
-      <section id="about" ref={aboutRef} className="py-16 scroll-mt-24">
+      <section id="about" ref={aboutRef} className="py-20 scroll-mt-24">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-medium text-foreground mb-4">About the System</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+            <h2 className="text-3xl font-bold text-white mb-4">About WebSaathi</h2>
+            <p className="text-gray-300 max-w-2xl mx-auto">
               Designed with precision and elegance to provide comprehensive content safety
             </p>
           </div>
           
-          <div className="bg-white/20 backdrop-blur-sm rounded-2xl border border-border/30 shadow-glass p-6 md:p-8 scroll-animate">
-            <div className="prose prose-sm max-w-none text-foreground">
+          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
+            <div className="prose prose-sm max-w-none text-gray-300">
               <p>
-                Our content moderation system is designed to detect, classify, and mitigate harmful online content while defending against adversarial attacks. Using advanced AI technologies, the system analyzes text, images, audio, and documents for a variety of harmful content types.
+                WebSaathi is an advanced content moderation system designed to detect, classify, and mitigate harmful online content while defending against adversarial attacks. Using state-of-the-art AI technologies, our system analyzes text, images, audio, and videos for a variety of harmful content types.
               </p>
               
               <h3>Core Capabilities</h3>
@@ -209,7 +287,7 @@ const Index = () => {
               
               <h3>Technology</h3>
               <p>
-                The system uses state-of-the-art natural language processing and computer vision models to detect subtle patterns in content that may indicate harmful intent. Each analysis provides a detailed report with severity scores, confidence ratings, and recommended actions.
+                WebSaathi uses the Google Gemini 1.5 Pro AI model to detect subtle patterns in content that may indicate harmful intent. Each analysis provides a detailed report with severity scores, confidence ratings, and recommended actions.
               </p>
               
               <h3>Ethical Considerations</h3>

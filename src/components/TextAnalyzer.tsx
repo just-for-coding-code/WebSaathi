@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link } from 'lucide-react';
+import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link, Loader2, Shield } from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
 import { analyzeWithGemini } from '../utils/geminiApi';
 import AnalysisResult from './AnalysisResult';
@@ -123,21 +123,22 @@ const TextAnalyzer: React.FC = () => {
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="mb-8 space-y-2">
-        <h2 className="text-2xl font-medium text-white">Content Analysis</h2>
-        <p className="text-gray-400">
-          Analyze content for potentially harmful elements using advanced AI
+        <h2 className="text-2xl font-bold text-white">Content Analysis</h2>
+        <p className="text-gray-300">
+          Analyze content for potentially harmful elements using advanced AI technology
         </p>
       </div>
       
       <div className="space-y-8">
-        <div className="flex items-center space-x-2 justify-end mb-4">
-          <Label htmlFor="gemini-toggle" className="text-sm text-gray-400">
+        <div className="flex items-center space-x-3 justify-end mb-4 bg-gray-800/50 p-3 rounded-lg border border-gray-700/30">
+          <Label htmlFor="gemini-toggle" className="text-sm text-gray-300 font-medium">
             Use Gemini AI
           </Label>
           <Switch 
             id="gemini-toggle" 
             checked={useGemini} 
-            onCheckedChange={setUseGemini} 
+            onCheckedChange={setUseGemini}
+            className="data-[state=checked]:bg-primary"
           />
         </div>
         
@@ -146,16 +147,25 @@ const TextAnalyzer: React.FC = () => {
           className="w-full" 
           onValueChange={(value) => setSelectedTab(value as 'text' | 'image' | 'link')}
         >
-          <TabsList className="grid grid-cols-3 mb-6 bg-gray-800">
-            <TabsTrigger value="text" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsList className="grid grid-cols-3 mb-6 bg-gray-800/70 border border-gray-700/30 p-1 rounded-lg">
+            <TabsTrigger 
+              value="text" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-2"
+            >
               <FileText className="h-4 w-4 mr-2" />
               Text
             </TabsTrigger>
-            <TabsTrigger value="image" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger 
+              value="image" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-2"
+            >
               <Image className="h-4 w-4 mr-2" />
               Image
             </TabsTrigger>
-            <TabsTrigger value="link" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger 
+              value="link" 
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-2"
+            >
               <Link className="h-4 w-4 mr-2" />
               Media URL
             </TabsTrigger>
@@ -167,7 +177,7 @@ const TextAnalyzer: React.FC = () => {
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="Enter text to analyze..."
-                className="w-full h-40 px-4 py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 resize-none text-white"
+                className="w-full min-h-40 px-4 py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 resize-none text-white"
                 disabled={isAnalyzing}
               />
               
@@ -182,13 +192,13 @@ const TextAnalyzer: React.FC = () => {
             </div>
             
             <div className="space-y-3">
-              <h3 className="text-sm font-medium text-gray-400">Example prompts:</h3>
+              <h3 className="text-sm font-medium text-gray-300">Example prompts:</h3>
               <div className="flex flex-wrap gap-2">
                 {examplePrompts.map((prompt, index) => (
                   <button
                     key={index}
                     onClick={() => handleExampleClick(prompt)}
-                    className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+                    className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                   >
                     {prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt}
                   </button>
@@ -198,7 +208,12 @@ const TextAnalyzer: React.FC = () => {
           </TabsContent>
           
           <TabsContent value="image" className="space-y-6">
-            <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/40 hover:bg-gray-800/60 transition-colors cursor-pointer" onClick={triggerFileInput}>
+            <div 
+              className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/40 hover:bg-gray-800/60 transition-colors cursor-pointer relative overflow-hidden group" 
+              onClick={triggerFileInput}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -209,26 +224,26 @@ const TextAnalyzer: React.FC = () => {
               
               {imageData ? (
                 <div className="w-full space-y-4">
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-700">
                     <img 
                       src={imageData} 
                       alt="Uploaded content" 
                       className="w-full h-full object-cover" 
                     />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Button variant="outline" size="sm" onClick={triggerFileInput}>
+                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                      <Button variant="outline" size="sm" onClick={triggerFileInput} className="bg-gray-900/80 border-gray-700 text-white hover:bg-gray-800">
                         Replace
                       </Button>
                     </div>
                   </div>
-                  <p className="text-sm text-center text-gray-400">
+                  <p className="text-sm text-center text-gray-300">
                     Image uploaded. Click to change.
                   </p>
                 </div>
               ) : (
                 <>
                   <Upload className="h-10 w-10 text-gray-500 mb-4" />
-                  <p className="text-sm font-medium text-gray-400 mb-1">
+                  <p className="text-sm font-medium text-gray-300 mb-1">
                     Click to upload an image
                   </p>
                   <p className="text-xs text-gray-500">
@@ -242,7 +257,7 @@ const TextAnalyzer: React.FC = () => {
           <TabsContent value="link" className="space-y-4">
             <div className="space-y-4">
               <div className="flex flex-col space-y-2">
-                <Label htmlFor="media-url" className="text-sm text-gray-400">
+                <Label htmlFor="media-url" className="text-sm text-gray-300 font-medium">
                   Enter URL to analyze
                 </Label>
                 <Textarea
@@ -256,7 +271,7 @@ const TextAnalyzer: React.FC = () => {
               </div>
               
               <div className="flex flex-col space-y-2">
-                <Label className="text-sm text-gray-400">
+                <Label className="text-sm text-gray-300 font-medium">
                   Content type
                 </Label>
                 <div className="flex space-x-2">
@@ -264,7 +279,7 @@ const TextAnalyzer: React.FC = () => {
                     type="button"
                     variant={mediaType === 'image' ? 'default' : 'outline'}
                     onClick={() => setMediaType('image')}
-                    className="flex-1"
+                    className={`flex-1 ${mediaType === 'image' ? 'bg-primary' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'}`}
                   >
                     <Image className="h-4 w-4 mr-2" />
                     Image
@@ -273,7 +288,7 @@ const TextAnalyzer: React.FC = () => {
                     type="button"
                     variant={mediaType === 'video' ? 'default' : 'outline'}
                     onClick={() => setMediaType('video')}
-                    className="flex-1"
+                    className={`flex-1 ${mediaType === 'video' ? 'bg-primary' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'}`}
                   >
                     <Video className="h-4 w-4 mr-2" />
                     Video
@@ -282,7 +297,7 @@ const TextAnalyzer: React.FC = () => {
                     type="button"
                     variant={mediaType === 'audio' ? 'default' : 'outline'}
                     onClick={() => setMediaType('audio')}
-                    className="flex-1"
+                    className={`flex-1 ${mediaType === 'audio' ? 'bg-primary' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'}`}
                   >
                     <Music className="h-4 w-4 mr-2" />
                     Audio
@@ -291,13 +306,13 @@ const TextAnalyzer: React.FC = () => {
               </div>
               
               <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-400">Example URLs:</h3>
+                <h3 className="text-sm font-medium text-gray-300">Example URLs:</h3>
                 <div className="flex flex-wrap gap-2">
                   {exampleUrls.map((url, index) => (
                     <button
                       key={index}
                       onClick={() => handleExampleClick(url)}
-                      className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 transition-colors"
+                      className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                     >
                       {url.length > 30 ? url.substring(0, 30) + '...' : url}
                     </button>
@@ -315,48 +330,62 @@ const TextAnalyzer: React.FC = () => {
               (selectedTab === 'text' && !inputText.trim()) || 
               (selectedTab === 'image' && !imageData) || 
               (selectedTab === 'link' && !mediaUrl.trim())}
-            className="inline-flex items-center space-x-2 px-6 py-2.5 rounded-full font-medium text-sm"
-            variant="default"
+            className="inline-flex items-center space-x-2 px-6 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm shadow-lg hover:shadow-primary/20 transition-all"
           >
-            <span>Analyze</span>
-            <Send className="h-4 w-4" />
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              <>
+                <span>Analyze Content</span>
+                <Shield className="h-4 w-4 ml-2" />
+              </>
+            )}
           </Button>
         </div>
         
         <div className="relative min-h-[200px]">
-          <h3 className="text-lg font-medium text-white mb-4">Analysis Results</h3>
+          <h3 className="text-xl font-bold text-white mb-6">Analysis Results</h3>
           
           {/* Show built-in analysis result */}
           {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
           {/* Show Gemini response */}
           {useGemini && (
-            <div className="rounded-2xl bg-gray-800/40 backdrop-blur-sm border border-gray-800/30 p-6">
+            <div className="rounded-2xl bg-gray-800/40 backdrop-blur-sm border border-gray-700/30 p-6 shadow-xl">
               {isAnalyzing ? (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                  <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                  <p className="text-gray-400">Analyzing with Gemini AI...</p>
+                  <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <p className="text-gray-300">Analyzing with Gemini AI...</p>
                 </div>
               ) : geminiResponse ? (
                 <div className="prose prose-sm max-w-none prose-invert">
-                  <div className="whitespace-pre-wrap rounded-lg bg-gray-900 p-4 overflow-auto text-sm text-gray-300">
+                  <div className="whitespace-pre-wrap rounded-lg bg-gray-900/60 p-6 overflow-auto text-gray-200 border border-gray-700/50">
                     {geminiResponse}
                   </div>
                 </div>
               ) : (
-                <div className="text-center space-y-2 py-8">
-                  <AlertTriangle className="h-8 w-8 text-gray-600 mx-auto" />
-                  <p className="text-gray-400">No analysis results yet</p>
+                <div className="text-center space-y-2 py-10">
+                  <AlertTriangle className="h-12 w-12 text-gray-600 mx-auto" />
+                  <p className="text-gray-400 text-lg">No analysis results yet</p>
+                  <p className="text-gray-500 text-sm max-w-md mx-auto">
+                    Select your content type, enter or upload your content, and click "Analyze Content" to begin
+                  </p>
                 </div>
               )}
             </div>
           )}
           
           {!isAnalyzing && !result && !geminiResponse && (
-            <div className="rounded-2xl bg-gray-800/40 border border-gray-800/30 p-6 flex items-center justify-center">
-              <div className="text-center space-y-2">
-                <AlertTriangle className="h-8 w-8 text-gray-600 mx-auto" />
-                <p className="text-gray-400">No analysis results yet</p>
+            <div className="rounded-2xl bg-gray-800/40 border border-gray-700/30 p-6 flex items-center justify-center">
+              <div className="text-center space-y-2 py-10">
+                <AlertTriangle className="h-12 w-12 text-gray-600 mx-auto" />
+                <p className="text-gray-400 text-lg">No analysis results yet</p>
+                <p className="text-gray-500 text-sm max-w-md mx-auto">
+                  Select your content type, enter or upload your content, and click "Analyze Content" to begin
+                </p>
               </div>
             </div>
           )}

@@ -37,15 +37,17 @@ export interface GeminiResponse {
 export const analyzeWithGemini = async (content: string, contentType: 'text' | 'image' | 'video' | 'audio'): Promise<string> => {
   try {
     // Get the API key from Supabase Edge Function
-    // Use the correct URL for the edge function
     const response = await fetch('https://hardtowtofuuzejggihn.supabase.co/functions/v1/get-gemini-key', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      cache: 'no-store' // Prevent caching issues
     });
     
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API key retrieval error:', response.status, errorText);
       throw new Error(`API key retrieval failed: ${response.status} ${response.statusText}`);
     }
     
@@ -54,7 +56,7 @@ export const analyzeWithGemini = async (content: string, contentType: 'text' | '
     if (!data.key) {
       toast({
         title: "API Key Missing",
-        description: "Please check if Gemini API key is configured in Supabase secrets.",
+        description: "Please check if Gemini API key is configured in Supabase secrets with name 'Gemini_key'.",
         variant: "destructive",
       });
       return "API key is required to analyze content.";

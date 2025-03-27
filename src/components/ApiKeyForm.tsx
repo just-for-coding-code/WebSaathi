@@ -14,7 +14,7 @@ const ApiKeyForm = () => {
     // Check if API key exists in Supabase
     const checkApiKey = async () => {
       try {
-        const response = await fetch('/api/get-gemini-key');
+        const response = await fetch('https://hardtowtofuuzejggihn.supabase.co/functions/v1/get-gemini-key');
         const data = await response.json();
         setHasKey(!!data.key);
       } catch (error) {
@@ -45,15 +45,15 @@ const ApiKeyForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto bg-gray-800/30 backdrop-blur-sm border border-gray-700/30 rounded-xl p-6 shadow-subtle">
+    <div className="w-full max-w-md mx-auto bg-gray-800/30 backdrop-blur-sm border border-gray-700/30 rounded-xl p-6 shadow-lg">
       {!showForm && hasKey ? (
         <div className="space-y-4">
           <div className="flex items-center space-x-2 text-primary">
             <ShieldCheck className="h-5 w-5" />
             <span className="font-medium">API Key Configured</span>
           </div>
-          <p className="text-sm text-gray-400">
-            Your Gemini API key is securely stored in Supabase secrets
+          <p className="text-sm text-gray-300">
+            Your Gemini API key is securely stored in Supabase secrets with name 'Gemini_key'
           </p>
         </div>
       ) : (
@@ -62,9 +62,9 @@ const ApiKeyForm = () => {
             <Key className="h-5 w-5" />
             <h3 className="font-medium">Gemini API Key Information</h3>
           </div>
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-sm text-gray-300 mb-4">
             The Google Gemini API key is securely stored in Supabase secrets and used for content analysis.
-            No action is required as the key is already configured.
+            No action is required as the key is already configured with name 'Gemini_key'.
           </p>
         </div>
       )}
