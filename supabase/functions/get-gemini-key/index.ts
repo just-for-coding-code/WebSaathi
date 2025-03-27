@@ -17,6 +17,7 @@ serve(async (req) => {
     const geminiKey = Deno.env.get('Gemini_key');
     
     if (!geminiKey) {
+      console.error('Gemini API key not found in secrets');
       return new Response(
         JSON.stringify({ error: 'Gemini API key not configured' }),
         { 
@@ -26,6 +27,8 @@ serve(async (req) => {
       );
     }
 
+    console.log('Successfully retrieved Gemini key');
+    
     // Return the API key securely
     return new Response(
       JSON.stringify({ key: geminiKey }),
@@ -35,6 +38,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error('Error retrieving Gemini key:', error.message);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 

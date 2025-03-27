@@ -1,5 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 // Types for Gemini API
 export interface GeminiRequestBody {
@@ -36,24 +37,23 @@ export interface GeminiResponse {
 
 export const analyzeWithGemini = async (content: string, contentType: 'text' | 'image' | 'video' | 'audio'): Promise<string> => {
   try {
-    // Get the API key from Supabase Edge Function
-    const response = await fetch('https://hardtowtofuuzejggihn.supabase.co/functions/v1/get-gemini-key', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store' // Prevent caching issues
-    });
+    console.log("Starting analysis with Gemini...");
     
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API key retrieval error:', response.status, errorText);
-      throw new Error(`API key retrieval failed: ${response.status} ${response.statusText}`);
+    // Get the API key from Supabase Edge Function using the Supabase client
+    const { data, error } = await supabase.functions.invoke('get-gemini-key');
+    
+    if (error) {
+      console.error('API key retrieval error:', error);
+      toast({
+        title: "API Key Error",
+        description: "Failed to retrieve the Gemini API key from Supabase.",
+        variant: "destructive",
+      });
+      throw new Error(`API key retrieval failed: ${error.message}`);
     }
     
-    const data = await response.json();
-    
-    if (!data.key) {
+    if (!data || !data.key) {
+      console.error('API key is missing from response:', data);
       toast({
         title: "API Key Missing",
         description: "Please check if Gemini API key is configured in Supabase secrets with name 'Gemini_key'.",
@@ -63,6 +63,7 @@ export const analyzeWithGemini = async (content: string, contentType: 'text' | '
     }
     
     const apiKey = data.key;
+    console.log("Successfully retrieved API key from Supabase");
 
     // Prepare request body based on content type
     let requestBody: GeminiRequestBody;
@@ -92,6 +93,7 @@ export const analyzeWithGemini = async (content: string, contentType: 'text' | '
 
     if (!geminiResponse.ok) {
       const errorData = await geminiResponse.json();
+      console.error("Gemini API error:", errorData);
       throw new Error(errorData.error?.message || `Failed to analyze content: ${geminiResponse.status} ${geminiResponse.statusText}`);
     }
 

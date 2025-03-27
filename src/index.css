@@ -35,7 +35,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
+    --primary: 221.2 83.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -79,7 +79,7 @@
   }
 
   .animate-pulse-soft {
-    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
   
   /* Fix for disappearing elements */
@@ -90,14 +90,63 @@
   .opacity-100 {
     opacity: 1;
   }
+  
+  /* Card spotlight effect */
+  .card-spotlight {
+    --mouse-x: 0;
+    --mouse-y: 0;
+    position: relative;
+    border-radius: 0.75rem;
+    overflow: hidden;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary;
+  }
+  
+  /* Interactive button states */
+  .interactive-btn {
+    @apply relative overflow-hidden;
+  }
+  
+  .interactive-btn::after {
+    @apply absolute inset-0 bg-white opacity-0 transition-opacity duration-300;
+    content: '';
+    mix-blend-mode: overlay;
+  }
+  
+  .interactive-btn:hover::after {
+    @apply opacity-10;
+  }
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(155, 135, 245, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(155, 135, 245, 0.6);
   }
 }
 

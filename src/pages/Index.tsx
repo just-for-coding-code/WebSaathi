@@ -1,6 +1,6 @@
 
 import React, { useEffect, useRef } from 'react';
-import { Shield, Info, AlertTriangle, MessageSquareX, UserX, EyeOff, ShieldAlert, ShieldCheck, Download, ExternalLink } from 'lucide-react';
+import { Shield, Info, AlertTriangle, MessageSquareX, UserX, EyeOff, ShieldAlert, ShieldCheck, ExternalLink } from 'lucide-react';
 import Layout from '../components/Layout';
 import TextAnalyzer from '../components/TextAnalyzer';
 import CategoryCard from '../components/CategoryCard';
@@ -14,8 +14,28 @@ const Index = () => {
   const categoriesRef = useRef<HTMLElement>(null);
   const aboutRef = useRef<HTMLElement>(null);
   const extensionRef = useRef<HTMLElement>(null);
+  const mousePosRef = useRef({ x: 0, y: 0 });
 
   useEffect(() => {
+    // Track mouse position for spotlight effects
+    const handleMouseMove = (event: MouseEvent) => {
+      mousePosRef.current = { x: event.clientX, y: event.clientY };
+      
+      // Update card spotlight effects
+      document.querySelectorAll('.card-spotlight').forEach((card) => {
+        const rect = card.getBoundingClientRect();
+        const x = mousePosRef.current.x - rect.left;
+        const y = mousePosRef.current.y - rect.top;
+        
+        if (card instanceof HTMLElement) {
+          card.style.setProperty('--mouse-x', `${x}px`);
+          card.style.setProperty('--mouse-y', `${y}px`);
+        }
+      });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    
     // Fixed animation observer that properly handles elements as they come into view
     const animateOnScroll = (entries: IntersectionObserverEntry[]) => {
       entries.forEach(entry => {
@@ -45,6 +65,7 @@ const Index = () => {
     
     return () => {
       elements.forEach(el => observer.unobserve(el));
+      window.removeEventListener('mousemove', handleMouseMove);
     };
   }, []);
 
@@ -77,19 +98,26 @@ const Index = () => {
 
   return (
     <Layout>
+      {/* Background beam effect */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-pulse-soft"></div>
+        <div className="absolute top-2/3 left-2/3 w-64 h-64 bg-blue-400/20 rounded-full mix-blend-screen filter blur-[60px] opacity-70 animate-pulse-soft" style={{animationDelay: '1s'}}></div>
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full mix-blend-screen filter blur-[70px] opacity-70 animate-pulse-soft" style={{animationDelay: '2s'}}></div>
+      </div>
+      
       {/* Hero Section */}
       <section className="py-16 md:py-24 relative overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-blue-500/5 mix-blend-multiply"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-blue-500/10 mix-blend-multiply"></div>
           <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-gray-950 to-transparent"></div>
-          <div className="absolute top-0 left-0 w-full h-64 bg-blue-500/5 blur-3xl opacity-20 transform -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-0 w-full h-64 bg-purple-500/5 blur-3xl opacity-20 transform translate-y-1/2"></div>
+          <div className="absolute top-0 left-0 w-full h-64 bg-blue-500/10 blur-3xl opacity-30 transform -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-full h-64 bg-purple-500/10 blur-3xl opacity-30 transform translate-y-1/2"></div>
         </div>
 
         <div className="flex flex-col items-center text-center space-y-10 max-w-4xl mx-auto px-4 relative z-10">
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={100}>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-primary">WebSaathi:</span> Content Safety Intelligence
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-primary to-purple-400">WebSaathi:</span> Content Safety Intelligence
             </h1>
           </AnimatedTransition>
           
@@ -101,7 +129,7 @@ const Index = () => {
           
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={500}>
             <div className="relative w-full max-w-lg mt-4">
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-16 rounded-full bg-primary/10 filter blur-xl"></div>
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-16 rounded-full bg-primary/20 filter blur-xl"></div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <a href="#analyzer" className="inline-flex items-center space-x-2 px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300">
                   <span className="text-base font-medium">Try Analyzer</span>
@@ -114,10 +142,10 @@ const Index = () => {
       </section>
       
       {/* Features Section */}
-      <section id="features" ref={featuresRef} className="py-20 scroll-mt-24 bg-gray-900/50 rounded-3xl my-8">
+      <section id="features" ref={featuresRef} className="py-20 scroll-mt-24 bg-gradient-to-b from-gray-900/30 to-gray-900/80 rounded-3xl my-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-16 scroll-animate">
-            <h2 className="text-3xl font-bold text-white mb-4">Key Features</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Key Features</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Our intelligent system utilizes advanced AI technologies to provide comprehensive content safety
             </p>
@@ -127,10 +155,11 @@ const Index = () => {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="relative overflow-hidden rounded-xl bg-gray-800/50 backdrop-blur-sm p-8 border border-gray-700/30 shadow-xl hover:shadow-primary/5 transition-all duration-300 group scroll-animate"
+                className="card-spotlight relative overflow-hidden rounded-xl bg-gray-800/30 backdrop-blur-sm p-8 border border-gray-700/30 shadow-xl hover:shadow-primary/10 transition-all duration-300 group scroll-animate"
                 style={{ transitionDelay: `${100 * index}ms` }}
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-primary/10 to-transparent rounded-xl"></div>
+                <div className="pointer-events-none absolute -inset-px rounded-xl opacity-0 group-hover:opacity-100 transition duration-300 bg-[radial-gradient(circle_at_var(--mouse-x)_var(--mouse-y),rgba(155,135,245,0.15),transparent_45%)]"></div>
                 
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
@@ -148,7 +177,7 @@ const Index = () => {
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="flex-1 scroll-animate">
-              <h2 className="text-3xl font-bold text-white mb-6">WebSaathi Browser Extension</h2>
+              <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-6">WebSaathi Browser Extension</h2>
               <p className="text-gray-300 mb-6">
                 Take WebSaathi's content safety features with you across the web. Our browser extension provides real-time analysis of content you encounter while browsing.
               </p>
@@ -168,9 +197,10 @@ const Index = () => {
               </ul>
               
               <div className="flex flex-wrap gap-4">
-                <Button className="bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  Download Extension
+                <Button className="relative overflow-hidden group bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
+                  <span className="relative z-10">Check Out Extension</span>
+                  <ExternalLink className="h-4 w-4 relative z-10" />
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></div>
                 </Button>
                 <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2">
                   <ExternalLink className="h-4 w-4" />
@@ -180,10 +210,10 @@ const Index = () => {
             </div>
             
             <div className="flex-1 scroll-animate">
-              <div className="relative rounded-xl overflow-hidden shadow-2xl border border-gray-700/50">
+              <div className="relative rounded-xl overflow-hidden shadow-2xl border border-gray-700/50 group hover:border-primary/30 transition-colors duration-300">
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-blue-500/10 mix-blend-overlay"></div>
                 <div className="aspect-video bg-gray-800 rounded-xl p-6 flex items-center justify-center">
-                  <div className="w-full max-w-sm">
+                  <div className="w-full max-w-sm transform group-hover:scale-105 transition-transform duration-500">
                     <div className="h-8 bg-gray-700 rounded-t-lg flex items-center px-3 space-x-1">
                       <div className="h-3 w-3 rounded-full bg-red-500"></div>
                       <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
@@ -221,7 +251,7 @@ const Index = () => {
       <section id="analyzer" className="py-20 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold text-white mb-4">Content Analysis Tool</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Content Analysis Tool</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Upload or paste text, images, videos, or audio to analyze for potentially harmful content
             </p>
@@ -234,10 +264,10 @@ const Index = () => {
       </section>
       
       {/* Harm Categories Section */}
-      <section id="categories" ref={categoriesRef} className="py-20 scroll-mt-24 bg-gray-900/50 rounded-3xl my-8">
+      <section id="categories" ref={categoriesRef} className="py-20 scroll-mt-24 bg-gradient-to-b from-gray-900/30 to-gray-900/80 rounded-3xl my-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold text-white mb-4">Content Risk Categories</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Content Risk Categories</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Our system detects and classifies various types of harmful online content
             </p>
@@ -247,7 +277,7 @@ const Index = () => {
             {categories.map((category, index) => (
               <div 
                 key={category} 
-                className="scroll-animate"
+                className="scroll-animate card-spotlight"
                 style={{ transitionDelay: `${100 * index}ms` }}
               >
                 <CategoryCard category={category} />
@@ -261,7 +291,7 @@ const Index = () => {
       <section id="about" ref={aboutRef} className="py-20 scroll-mt-24">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold text-white mb-4">About WebSaathi</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">About WebSaathi</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Designed with precision and elegance to provide comprehensive content safety
             </p>
