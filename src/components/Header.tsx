@@ -64,7 +64,7 @@ const Header: React.FC = () => {
                 <ShieldCheck className="h-6 w-6 text-primary relative" />
               </div>
               <span className="text-xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/80">
-                HarmWatcher
+                WebSaathi
               </span>
             </Link>
           </div>
