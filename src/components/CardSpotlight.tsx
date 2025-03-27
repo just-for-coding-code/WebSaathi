@@ -9,6 +9,7 @@ interface CardSpotlightProps {
   spotlightColor?: string;
   borderGlow?: boolean;
   gradientBg?: boolean;
+  style?: React.CSSProperties;
 }
 
 const CardSpotlight = ({
@@ -18,6 +19,7 @@ const CardSpotlight = ({
   spotlightColor = "rgba(155, 135, 245, 0.15)",
   borderGlow = false,
   gradientBg = false,
+  style,
 }: CardSpotlightProps) => {
   const divRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
@@ -56,6 +58,7 @@ const CardSpotlight = ({
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onMouseMove={handleMouseMove}
+      style={style}
     >
       {/* Spotlight effect */}
       <div
