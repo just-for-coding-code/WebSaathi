@@ -101,21 +101,23 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* Hero Section with Background Beams */}
+      {/* Hero Section with Enhanced Background Beams */}
       <section className="py-20 md:py-28 relative overflow-hidden">
         <BackgroundBeams 
           color="#9b87f5"
-          beamCount={8}
-          beamOpacity={0.5}
+          beamCount={10}
+          beamOpacity={0.7}
+          beamSpread={0.3}
+          waveSpeed={8}
         />
         
         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/20 pointer-events-none" />
 
         <div className="flex flex-col items-center text-center space-y-10 max-w-4xl mx-auto px-4 relative z-10">
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={100}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-primary to-purple-400">WebSaathi:</span>{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/70">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-primary to-purple-400 animate-gradient-shift">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-primary to-purple-400">WebSaathi:</span>{" "}
+              <span className="bg-clip-text text-transparent bg-gradient-to-br from-white via-white/90 to-white/70">
                 Content Safety Intelligence
               </span>
             </h1>
@@ -132,7 +134,7 @@ const Index = () => {
               <div className="absolute inset-0 flex items-center justify-center">
                 <a href="#analyzer">
                   <GlowingButton 
-                    glowColor="rgba(155, 135, 245, 0.5)"
+                    glowColor="rgba(155, 135, 245, 0.7)"
                     hoverScale={true}
                     pulseEffect={true}
                     className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base"
@@ -151,7 +153,7 @@ const Index = () => {
       <section id="features" ref={featuresRef} className="py-20 scroll-mt-24 bg-gradient-to-b from-gray-900/30 to-gray-900/80 rounded-3xl my-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-16 scroll-animate">
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">Key Features</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Key Features</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Our intelligent system utilizes advanced AI technologies to provide comprehensive content safety
             </p>
@@ -178,11 +180,19 @@ const Index = () => {
       </section>
       
       {/* WebSaathi Extension Section */}
-      <section id="extension" ref={extensionRef} className="py-20 scroll-mt-24 my-8">
-        <div className="max-w-5xl mx-auto px-4">
+      <section id="extension" ref={extensionRef} className="py-20 scroll-mt-24 my-8 relative">
+        <BackgroundBeams 
+          color="#6E59A5"
+          beamCount={6}
+          beamOpacity={0.3}
+          beamSpread={0.5}
+          waveSpeed={15}
+        />
+        
+        <div className="max-w-5xl mx-auto px-4 relative z-10">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="flex-1 scroll-animate">
-              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-6">WebSaathi Browser Extension</h2>
+              <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-6">WebSaathi Browser Extension</h2>
               <p className="text-gray-300 mb-6">
                 Take WebSaathi's content safety features with you across the web. Our browser extension provides real-time analysis of content you encounter while browsing.
               </p>
@@ -204,7 +214,7 @@ const Index = () => {
               <div className="flex flex-wrap gap-4">
                 <GlowingButton 
                   className="bg-primary hover:bg-primary/90 text-white"
-                  glowColor="rgba(155, 135, 245, 0.5)"
+                  glowColor="rgba(155, 135, 245, 0.6)"
                 >
                   <span>Check Out Extension</span>
                   <ExternalLink className="h-4 w-4 ml-2" />
@@ -259,22 +269,19 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Content Analyzer Section */}
+      {/* Content Analyzer Section with Simplified Design */}
       <section id="analyzer" className="py-20 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">Content Analysis Tool</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Content Analysis Tool</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Upload or paste text, images, videos, or audio to analyze for potentially harmful content
             </p>
           </div>
           
-          <CardSpotlight
-            borderGlow={true}
-            className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate"
-          >
+          <div className="bg-gray-800/40 rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
             <TextAnalyzer />
-          </CardSpotlight>
+          </div>
         </div>
       </section>
       
@@ -282,7 +289,7 @@ const Index = () => {
       <section id="categories" ref={categoriesRef} className="py-20 scroll-mt-24 bg-gradient-to-b from-gray-900/30 to-gray-900/80 rounded-3xl my-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">Content Risk Categories</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Content Risk Categories</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Our system detects and classifies various types of harmful online content
             </p>
@@ -305,10 +312,17 @@ const Index = () => {
       </section>
       
       {/* About Section */}
-      <section id="about" ref={aboutRef} className="py-20 scroll-mt-24">
-        <div className="max-w-4xl mx-auto px-4">
+      <section id="about" ref={aboutRef} className="py-20 scroll-mt-24 relative">
+        <BackgroundBeams 
+          color="#8B5CF6"
+          beamCount={5}
+          beamOpacity={0.3}
+          waveSpeed={12}
+        />
+        
+        <div className="max-w-4xl mx-auto px-4 relative z-10">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">About WebSaathi</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">About WebSaathi</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Designed with precision and elegance to provide comprehensive content safety
             </p>

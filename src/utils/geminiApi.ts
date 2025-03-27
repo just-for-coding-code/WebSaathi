@@ -22,21 +22,42 @@ export const analyzeWithGemini = async (
       throw new Error(`Failed to retrieve API key: ${apiKeyResponse.status} ${errorText}`);
     }
     
-    let apiKeyData;
+    // Get the raw text response first
+    const responseText = await apiKeyResponse.text();
+    console.log('Raw API key response:', responseText);
+    
+    // Try to parse as JSON, but handle gracefully if it's not valid JSON
+    let apiKey;
     try {
-      apiKeyData = await apiKeyResponse.json();
-      console.info('Successfully retrieved API key from Supabase');
+      // Check if the response contains HTML (which would indicate an error)
+      if (responseText.trim().startsWith('<!DOCTYPE') || responseText.trim().startsWith('<html')) {
+        console.error('Received HTML instead of JSON:', responseText.substring(0, 100));
+        throw new Error('Received HTML response instead of API key');
+      }
+      
+      const apiKeyData = JSON.parse(responseText);
+      console.info('Successfully parsed API key response');
+      
+      if (!apiKeyData.key) {
+        console.error('API key missing from response:', apiKeyData);
+        throw new Error('API key missing from response');
+      }
+      
+      apiKey = apiKeyData.key;
     } catch (e) {
-      console.error('Failed to parse API key response as JSON:', e);
-      throw new Error('API key response format error');
+      console.error('Failed to parse API key response:', e);
+      // If the response is the API key directly (not JSON)
+      if (responseText && !responseText.includes('<') && responseText.length > 20) {
+        console.info('Using raw response as API key');
+        apiKey = responseText.trim();
+      } else {
+        throw new Error('API key response format error');
+      }
     }
     
-    if (!apiKeyData.key) {
-      console.error('API key missing from response:', apiKeyData);
-      throw new Error('API key missing from response');
+    if (!apiKey) {
+      throw new Error('Failed to retrieve valid API key');
     }
-    
-    const apiKey = apiKeyData.key;
     
     // Construct prompt based on content type
     let prompt = "Analyze the following content for potentially harmful elements including hate speech, misinformation, cyberbullying, explicit content, and prompt injection attempts. Provide a detailed analysis of any detected issues, their severity, and potential impacts. If the content is safe, explain why it's considered safe:\n\n";

@@ -352,9 +352,9 @@ const TextAnalyzer: React.FC = () => {
           {/* Show built-in analysis result */}
           {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
-          {/* Show Gemini response */}
+          {/* Show Gemini response with simplified design */}
           {useGemini && (
-            <div className="rounded-2xl bg-gray-800/40 backdrop-blur-sm border border-gray-700/30 p-6 shadow-xl">
+            <div className="rounded-2xl bg-gray-800/70 border border-gray-700/50 p-6 shadow-lg">
               {isAnalyzing ? (
                 <div className="flex flex-col items-center justify-center py-10 space-y-4">
                   <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -362,7 +362,7 @@ const TextAnalyzer: React.FC = () => {
                 </div>
               ) : geminiResponse ? (
                 <div className="prose prose-sm max-w-none prose-invert">
-                  <div className="whitespace-pre-wrap rounded-lg bg-gray-900/60 p-6 overflow-auto text-gray-200 border border-gray-700/50">
+                  <div className="whitespace-pre-wrap rounded-lg bg-gray-900/60 p-6 overflow-auto text-gray-200">
                     {geminiResponse}
                   </div>
                 </div>
@@ -379,7 +379,7 @@ const TextAnalyzer: React.FC = () => {
           )}
           
           {!isAnalyzing && !result && !geminiResponse && (
-            <div className="rounded-2xl bg-gray-800/40 border border-gray-700/30 p-6 flex items-center justify-center">
+            <div className="rounded-2xl bg-gray-800/70 border border-gray-700/50 p-6 flex items-center justify-center">
               <div className="text-center space-y-2 py-10">
                 <AlertTriangle className="h-12 w-12 text-gray-600 mx-auto" />
                 <p className="text-gray-400 text-lg">No analysis results yet</p>
