@@ -8,6 +8,9 @@ import AnimatedTransition from '../components/AnimatedTransition';
 import { Button } from '@/components/ui/button';
 import { createScrollObserver, applyPersistentAnimation } from '../utils/animationUtils';
 import { HarmCategory } from '../utils/analyzeContent';
+import BackgroundBeams from '@/components/BackgroundBeams';
+import GlowingButton from '@/components/GlowingButton';
+import CardSpotlight from '@/components/CardSpotlight';
 
 const Index = () => {
   const featuresRef = useRef<HTMLElement>(null);
@@ -98,26 +101,23 @@ const Index = () => {
 
   return (
     <Layout>
-      {/* Background beam effect */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/30 rounded-full mix-blend-screen filter blur-[80px] opacity-70 animate-pulse-soft"></div>
-        <div className="absolute top-2/3 left-2/3 w-64 h-64 bg-blue-400/20 rounded-full mix-blend-screen filter blur-[60px] opacity-70 animate-pulse-soft" style={{animationDelay: '1s'}}></div>
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500/20 rounded-full mix-blend-screen filter blur-[70px] opacity-70 animate-pulse-soft" style={{animationDelay: '2s'}}></div>
-      </div>
-      
-      {/* Hero Section */}
-      <section className="py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-blue-500/10 mix-blend-multiply"></div>
-          <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-gradient-to-t from-gray-950 to-transparent"></div>
-          <div className="absolute top-0 left-0 w-full h-64 bg-blue-500/10 blur-3xl opacity-30 transform -translate-y-1/2"></div>
-          <div className="absolute bottom-0 right-0 w-full h-64 bg-purple-500/10 blur-3xl opacity-30 transform translate-y-1/2"></div>
-        </div>
+      {/* Hero Section with Background Beams */}
+      <section className="py-20 md:py-28 relative overflow-hidden">
+        <BackgroundBeams 
+          color="#9b87f5"
+          beamCount={8}
+          beamOpacity={0.5}
+        />
+        
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/20 pointer-events-none" />
 
         <div className="flex flex-col items-center text-center space-y-10 max-w-4xl mx-auto px-4 relative z-10">
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={100}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-primary to-purple-400">WebSaathi:</span> Content Safety Intelligence
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-primary to-purple-400">WebSaathi:</span>{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-white/90 to-white/70">
+                Content Safety Intelligence
+              </span>
             </h1>
           </AnimatedTransition>
           
@@ -129,11 +129,17 @@ const Index = () => {
           
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={500}>
             <div className="relative w-full max-w-lg mt-4">
-              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-3/4 h-16 rounded-full bg-primary/20 filter blur-xl"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                <a href="#analyzer" className="inline-flex items-center space-x-2 px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300">
-                  <span className="text-base font-medium">Try Analyzer</span>
-                  <Shield className="h-5 w-5 ml-2" />
+                <a href="#analyzer">
+                  <GlowingButton 
+                    glowColor="rgba(155, 135, 245, 0.5)"
+                    hoverScale={true}
+                    pulseEffect={true}
+                    className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base"
+                  >
+                    <span>Try Analyzer</span>
+                    <Shield className="h-5 w-5 ml-2" />
+                  </GlowingButton>
                 </a>
               </div>
             </div>
@@ -145,7 +151,7 @@ const Index = () => {
       <section id="features" ref={featuresRef} className="py-20 scroll-mt-24 bg-gradient-to-b from-gray-900/30 to-gray-900/80 rounded-3xl my-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-16 scroll-animate">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Key Features</h2>
+            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">Key Features</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Our intelligent system utilizes advanced AI technologies to provide comprehensive content safety
             </p>
@@ -153,20 +159,19 @@ const Index = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <div 
+              <CardSpotlight 
                 key={index}
-                className="card-spotlight relative overflow-hidden rounded-xl bg-gray-800/30 backdrop-blur-sm p-8 border border-gray-700/30 shadow-xl hover:shadow-primary/10 transition-all duration-300 group scroll-animate"
+                borderGlow
+                className="rounded-xl bg-gray-800/30 backdrop-blur-sm p-8 border border-gray-700/30 shadow-xl scroll-animate"
+                containerClassName="transition-all duration-300 hover:transform hover:translate-y-[-4px]"
                 style={{ transitionDelay: `${100 * index}ms` }}
               >
-                <div className="pointer-events-none absolute -inset-px opacity-0 group-hover:opacity-100 transition duration-300 bg-gradient-to-br from-primary/10 to-transparent rounded-xl"></div>
-                <div className="pointer-events-none absolute -inset-px rounded-xl opacity-0 group-hover:opacity-100 transition duration-300 bg-[radial-gradient(circle_at_var(--mouse-x)_var(--mouse-y),rgba(155,135,245,0.15),transparent_45%)]"></div>
-                
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform duration-300">
                   {feature.icon}
                 </div>
                 <h3 className="text-xl font-semibold text-white mb-3">{feature.title}</h3>
                 <p className="text-gray-300">{feature.description}</p>
-              </div>
+              </CardSpotlight>
             ))}
           </div>
         </div>
@@ -177,7 +182,7 @@ const Index = () => {
         <div className="max-w-5xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center gap-12">
             <div className="flex-1 scroll-animate">
-              <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-6">WebSaathi Browser Extension</h2>
+              <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-6">WebSaathi Browser Extension</h2>
               <p className="text-gray-300 mb-6">
                 Take WebSaathi's content safety features with you across the web. Our browser extension provides real-time analysis of content you encounter while browsing.
               </p>
@@ -197,23 +202,30 @@ const Index = () => {
               </ul>
               
               <div className="flex flex-wrap gap-4">
-                <Button className="relative overflow-hidden group bg-primary hover:bg-primary/90 text-white flex items-center gap-2">
-                  <span className="relative z-10">Check Out Extension</span>
-                  <ExternalLink className="h-4 w-4 relative z-10" />
-                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-400 to-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-0"></div>
-                </Button>
+                <GlowingButton 
+                  className="bg-primary hover:bg-primary/90 text-white"
+                  glowColor="rgba(155, 135, 245, 0.5)"
+                >
+                  <span>Check Out Extension</span>
+                  <ExternalLink className="h-4 w-4 ml-2" />
+                </GlowingButton>
+                
                 <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-4 w-4 mr-2" />
                   Learn More
                 </Button>
               </div>
             </div>
             
             <div className="flex-1 scroll-animate">
-              <div className="relative rounded-xl overflow-hidden shadow-2xl border border-gray-700/50 group hover:border-primary/30 transition-colors duration-300">
+              <CardSpotlight 
+                borderGlow
+                className="rounded-xl overflow-hidden shadow-2xl border border-gray-700/50"
+                containerClassName="transition-all duration-500 hover:transform hover:scale-[1.02]"
+              >
                 <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-blue-500/10 mix-blend-overlay"></div>
                 <div className="aspect-video bg-gray-800 rounded-xl p-6 flex items-center justify-center">
-                  <div className="w-full max-w-sm transform group-hover:scale-105 transition-transform duration-500">
+                  <div className="w-full max-w-sm transform transition-transform duration-500">
                     <div className="h-8 bg-gray-700 rounded-t-lg flex items-center px-3 space-x-1">
                       <div className="h-3 w-3 rounded-full bg-red-500"></div>
                       <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
@@ -241,7 +253,7 @@ const Index = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </CardSpotlight>
             </div>
           </div>
         </div>
@@ -251,15 +263,18 @@ const Index = () => {
       <section id="analyzer" className="py-20 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Content Analysis Tool</h2>
+            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">Content Analysis Tool</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Upload or paste text, images, videos, or audio to analyze for potentially harmful content
             </p>
           </div>
           
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
+          <CardSpotlight
+            borderGlow={true}
+            className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate"
+          >
             <TextAnalyzer />
-          </div>
+          </CardSpotlight>
         </div>
       </section>
       
@@ -267,7 +282,7 @@ const Index = () => {
       <section id="categories" ref={categoriesRef} className="py-20 scroll-mt-24 bg-gradient-to-b from-gray-900/30 to-gray-900/80 rounded-3xl my-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Content Risk Categories</h2>
+            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">Content Risk Categories</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Our system detects and classifies various types of harmful online content
             </p>
@@ -275,13 +290,15 @@ const Index = () => {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {categories.map((category, index) => (
-              <div 
+              <CardSpotlight 
                 key={category} 
-                className="scroll-animate card-spotlight"
+                borderGlow
+                containerClassName="scroll-animate transition-all duration-300 hover:transform hover:translate-y-[-4px]"
+                className=""
                 style={{ transitionDelay: `${100 * index}ms` }}
               >
                 <CategoryCard category={category} />
-              </div>
+              </CardSpotlight>
             ))}
           </div>
         </div>
@@ -291,13 +308,16 @@ const Index = () => {
       <section id="about" ref={aboutRef} className="py-20 scroll-mt-24">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">About WebSaathi</h2>
+            <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-primary mb-4">About WebSaathi</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Designed with precision and elegance to provide comprehensive content safety
             </p>
           </div>
           
-          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
+          <CardSpotlight
+            borderGlow
+            className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate"
+          >
             <div className="prose prose-sm max-w-none text-gray-300">
               <p>
                 WebSaathi is an advanced content moderation system designed to detect, classify, and mitigate harmful online content while defending against adversarial attacks. Using state-of-the-art AI technologies, our system analyzes text, images, audio, and videos for a variety of harmful content types.
@@ -325,7 +345,7 @@ const Index = () => {
                 The system is designed with privacy and ethical considerations in mind. User data is anonymized, and diverse training datasets are used to minimize bias in detection algorithms. Regular audits ensure compliance with relevant regulations.
               </p>
             </div>
-          </div>
+          </CardSpotlight>
         </div>
       </section>
     </Layout>
