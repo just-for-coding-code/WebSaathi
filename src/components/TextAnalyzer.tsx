@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link, Loader2, Shield } from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
@@ -68,8 +67,6 @@ const TextAnalyzer: React.FC = () => {
           description: error instanceof Error ? error.message : "An unexpected error occurred",
           variant: "destructive"
         });
-        // Set a fallback response explaining the issue
-        setGeminiResponse("The Gemini API is currently unavailable. This could be due to maintenance, network issues, or the API key configuration. You can try again later or switch to the built-in analyzer.");
       } finally {
         setIsAnalyzing(false);
       }

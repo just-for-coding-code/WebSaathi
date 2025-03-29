@@ -29,15 +29,12 @@ serve(async (req) => {
 
     console.log('Successfully retrieved Gemini key');
     
-    // Return the API key securely with proper content-type
+    // Return the API key securely
     return new Response(
       JSON.stringify({ key: geminiKey }),
       { 
         status: 200, 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   } catch (error) {

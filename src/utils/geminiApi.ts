@@ -8,7 +8,7 @@ export const analyzeWithGemini = async (
   try {
     console.info('Starting analysis with Gemini...');
     
-    // Fetch API key from Supabase function with absolute URL
+    // Fetch API key from Supabase function with correct URL path
     const apiKeyResponse = await fetch('/api/functions/get-gemini-key', {
       method: 'GET',
       headers: {
@@ -20,13 +20,6 @@ export const analyzeWithGemini = async (
       const errorText = await apiKeyResponse.text();
       console.error('Failed to retrieve API key:', apiKeyResponse.status, errorText);
       throw new Error(`Failed to retrieve API key: ${apiKeyResponse.status} ${errorText}`);
-    }
-    
-    // Check if response is JSON by examining content-type header
-    const contentType = apiKeyResponse.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.error('API key response is not JSON. Content-Type:', contentType);
-      throw new Error('Invalid API key response format. Expected JSON.');
     }
     
     const apiKeyData = await apiKeyResponse.json();
@@ -124,7 +117,7 @@ export const analyzeWithGemini = async (
       variant: "destructive"
     });
     
-    // Return a more detailed fallback message
-    return "There was an issue connecting to the Gemini API. The API may be temporarily unavailable or there might be a configuration issue. Please try again later or use the built-in analyzer instead.";
+    // Instead of throwing the error, return a fallback message
+    return "There was an issue connecting to the Gemini API. Please try again later or use the built-in analyzer instead.";
   }
 };
