@@ -9,7 +9,10 @@ const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight request
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    });
   }
 
   try {
@@ -29,7 +32,7 @@ serve(async (req) => {
 
     console.log('Successfully retrieved Gemini key');
     
-    // Return the API key securely
+    // Return the API key securely with proper content type
     return new Response(
       JSON.stringify({ key: geminiKey }),
       { 

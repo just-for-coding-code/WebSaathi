@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link, Loader2, Shield } from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
@@ -13,6 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import CardSpotlight from './CardSpotlight';
+import BackgroundBeams from './BackgroundBeams';
 
 const TextAnalyzer: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -119,7 +122,7 @@ const TextAnalyzer: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-3xl mx-auto relative">
       <div className="mb-8 space-y-2">
         <h2 className="text-2xl font-bold text-white">Content Analysis</h2>
         <p className="text-gray-300">
@@ -328,19 +331,24 @@ const TextAnalyzer: React.FC = () => {
               (selectedTab === 'text' && !inputText.trim()) || 
               (selectedTab === 'image' && !imageData) || 
               (selectedTab === 'link' && !mediaUrl.trim())}
-            className="inline-flex items-center space-x-2 px-6 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm shadow-lg hover:shadow-primary/20 transition-all"
+            className="relative inline-flex items-center space-x-2 px-6 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm shadow-lg hover:shadow-primary/20 transition-all overflow-hidden group"
           >
-            {isAnalyzing ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                <span>Analyzing...</span>
-              </>
-            ) : (
-              <>
-                <span>Analyze Content</span>
-                <Shield className="h-4 w-4 ml-2" />
-              </>
-            )}
+            <span className="relative z-10 flex items-center">
+              {isAnalyzing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <span>Analyzing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Analyze Content</span>
+                  <Shield className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </span>
+            <span className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500">
+              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-shimmer"></div>
+            </span>
           </Button>
         </div>
         
@@ -350,7 +358,11 @@ const TextAnalyzer: React.FC = () => {
           {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
           {useGemini && (
-            <Card className="bg-gray-800/70 border-gray-700/50 shadow-lg">
+            <CardSpotlight 
+              borderGlow
+              className="bg-gray-800/70 border-gray-700/50 shadow-lg"
+              spotlightColor="rgba(138, 120, 245, 0.1)"
+            >
               <CardContent className="p-6">
                 {isAnalyzing ? (
                   <div className="flex flex-col items-center justify-center py-10 space-y-4">
@@ -360,7 +372,21 @@ const TextAnalyzer: React.FC = () => {
                 ) : geminiResponse ? (
                   <div className="prose prose-sm max-w-none prose-invert">
                     <div className="whitespace-pre-line rounded-lg bg-gray-900/60 p-6 overflow-auto text-gray-200 leading-relaxed">
-                      {geminiResponse}
+                      {geminiResponse.split('\n\n').map((paragraph, index) => (
+                        <React.Fragment key={index}>
+                          {paragraph.startsWith('# ') ? (
+                            <h3 className="text-lg font-bold text-white mt-4 mb-2">{paragraph.replace('# ', '')}</h3>
+                          ) : paragraph.startsWith('## ') ? (
+                            <h4 className="text-md font-semibold text-gray-200 mt-3 mb-1">{paragraph.replace('## ', '')}</h4>
+                          ) : paragraph.startsWith('- ') ? (
+                            <ul className="list-disc list-inside my-2">
+                              <li className="text-gray-300">{paragraph.replace('- ', '')}</li>
+                            </ul>
+                          ) : (
+                            <p className="mb-3 text-gray-300">{paragraph}</p>
+                          )}
+                        </React.Fragment>
+                      ))}
                     </div>
                   </div>
                 ) : (
@@ -373,7 +399,7 @@ const TextAnalyzer: React.FC = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </CardSpotlight>
           )}
           
           {!isAnalyzing && !result && !geminiResponse && (

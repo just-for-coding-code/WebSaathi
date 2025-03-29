@@ -5,7 +5,8 @@ import Layout from '../components/Layout';
 import TextAnalyzer from '../components/TextAnalyzer';
 import CategoryCard from '../components/CategoryCard';
 import AnimatedTransition from '../components/AnimatedTransition';
-import { Button } from '@/components/ui/button';
+import { Button as ShadcnButton } from '@/components/ui/button';
+import { Button as MovingBorderButton } from '@/components/ui/moving-border';
 import { createScrollObserver, applyPersistentAnimation } from '../utils/animationUtils';
 import { HarmCategory } from '../utils/analyzeContent';
 import BackgroundBeams from '@/components/BackgroundBeams';
@@ -130,20 +131,28 @@ const Index = () => {
           </AnimatedTransition>
           
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={500}>
-            <div className="relative w-full max-w-lg mt-4">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <a href="#analyzer">
-                  <GlowingButton 
-                    glowColor="rgba(155, 135, 245, 0.7)"
-                    hoverScale={true}
-                    pulseEffect={true}
-                    className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base"
-                  >
-                    <span>Try Analyzer</span>
-                    <Shield className="h-5 w-5 ml-2" />
-                  </GlowingButton>
-                </a>
-              </div>
+            <div className="relative w-full max-w-lg mt-4 flex items-center justify-center space-x-4">
+              <a href="#analyzer">
+                <GlowingButton 
+                  glowColor="rgba(155, 135, 245, 0.7)"
+                  hoverScale={true}
+                  pulseEffect={true}
+                  className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base"
+                >
+                  <span>Try Analyzer</span>
+                  <Shield className="h-5 w-5 ml-2" />
+                </GlowingButton>
+              </a>
+              
+              <a href="#about">
+                <MovingBorderButton 
+                  className="px-6 py-3 text-sm font-medium"
+                  borderRadius="9999px" // Rounded-full equivalent
+                  containerClassName="shadow-md"
+                >
+                  Learn More
+                </MovingBorderButton>
+              </a>
             </div>
           </AnimatedTransition>
         </div>
@@ -212,18 +221,18 @@ const Index = () => {
               </ul>
               
               <div className="flex flex-wrap gap-4">
-                <GlowingButton 
-                  className="bg-primary hover:bg-primary/90 text-white"
-                  glowColor="rgba(155, 135, 245, 0.6)"
+                <MovingBorderButton
+                  className="px-6 py-3 text-sm font-medium flex items-center"
+                  borderRadius="0.5rem"
                 >
                   <span>Check Out Extension</span>
                   <ExternalLink className="h-4 w-4 ml-2" />
-                </GlowingButton>
+                </MovingBorderButton>
                 
-                <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2">
+                <ShadcnButton variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   Learn More
-                </Button>
+                </ShadcnButton>
               </div>
             </div>
             
@@ -270,8 +279,16 @@ const Index = () => {
       </section>
       
       {/* Content Analyzer Section with Simplified Design */}
-      <section id="analyzer" className="py-20 scroll-mt-24">
-        <div className="max-w-5xl mx-auto px-4">
+      <section id="analyzer" className="py-20 scroll-mt-24 relative">
+        <BackgroundBeams 
+          color="#4B3A8A"
+          beamCount={8}
+          beamOpacity={0.2}
+          beamSpread={0.4}
+          waveSpeed={10}
+        />
+        
+        <div className="max-w-5xl mx-auto px-4 relative z-10">
           <div className="text-center mb-12 scroll-animate">
             <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary mb-4">Content Analysis Tool</h2>
             <p className="text-gray-300 max-w-2xl mx-auto">
@@ -279,7 +296,7 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="bg-gray-800/40 rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
+          <div className="bg-gray-800/40 rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate backdrop-blur-sm">
             <TextAnalyzer />
           </div>
         </div>

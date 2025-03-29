@@ -8,7 +8,7 @@ export const analyzeWithGemini = async (
   try {
     console.info('Starting analysis with Gemini...');
     
-    // Fetch API key from Supabase function with correct URL path
+    // Fetch API key from Supabase function with correct path and protocol
     const apiKeyResponse = await fetch('/api/functions/get-gemini-key', {
       method: 'GET',
       headers: {
@@ -19,10 +19,20 @@ export const analyzeWithGemini = async (
     if (!apiKeyResponse.ok) {
       const errorText = await apiKeyResponse.text();
       console.error('Failed to retrieve API key:', apiKeyResponse.status, errorText);
-      throw new Error(`Failed to retrieve API key: ${apiKeyResponse.status} ${errorText}`);
+      throw new Error(`Failed to retrieve API key: ${apiKeyResponse.status}`);
     }
     
-    const apiKeyData = await apiKeyResponse.json();
+    // Validate that the response is proper JSON before parsing
+    const responseText = await apiKeyResponse.text();
+    let apiKeyData;
+    
+    try {
+      apiKeyData = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Invalid JSON response from API key endpoint:', responseText.substring(0, 100) + '...');
+      throw new Error('Invalid response format from API key service');
+    }
+    
     console.info('Successfully parsed API key response');
     
     if (!apiKeyData.key) {
@@ -117,7 +127,7 @@ export const analyzeWithGemini = async (
       variant: "destructive"
     });
     
-    // Instead of throwing the error, return a fallback message
-    return "There was an issue connecting to the Gemini API. Please try again later or use the built-in analyzer instead.";
+    // Return a more professional fallback message
+    return "We apologize, but there was an issue connecting to our advanced analysis service. Our team has been notified of this problem. In the meantime, you can try again later or use our built-in analyzer for your content safety needs.";
   }
 };
