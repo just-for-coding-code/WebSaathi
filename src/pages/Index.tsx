@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Shield, Info, AlertTriangle, MessageSquareX, UserX, EyeOff, ShieldAlert, ShieldCheck, ExternalLink } from 'lucide-react';
 import Layout from '../components/Layout';
@@ -11,6 +10,7 @@ import { HarmCategory } from '../utils/analyzeContent';
 import BackgroundBeams from '@/components/BackgroundBeams';
 import GlowingButton from '@/components/GlowingButton';
 import CardSpotlight from '@/components/CardSpotlight';
+import { Button as MovingBorderButton } from '@/components/ui/moving-border';
 
 const Index = () => {
   const featuresRef = useRef<HTMLElement>(null);
@@ -102,12 +102,12 @@ const Index = () => {
   return (
     <Layout>
       {/* Hero Section with Enhanced Background Beams */}
-      <section className="py-20 md:py-28 relative overflow-hidden">
+      <section className="py-20 md:py-28 relative overflow-hidden min-h-[80vh] flex items-center">
         <BackgroundBeams 
           color="#9b87f5"
-          beamCount={10}
+          beamCount={15}
           beamOpacity={0.7}
-          beamSpread={0.3}
+          beamSpread={0.4}
           waveSpeed={8}
         />
         
@@ -115,7 +115,7 @@ const Index = () => {
 
         <div className="flex flex-col items-center text-center space-y-10 max-w-4xl mx-auto px-4 relative z-10">
           <AnimatedTransition show={true} type="fade" className="opacity-0" delay={100}>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-primary to-purple-400 animate-gradient-shift">
+            <h1 className="text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-primary to-purple-400 animate-gradient-shift">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-primary to-purple-400">WebSaathi:</span>{" "}
               <span className="bg-clip-text text-transparent bg-gradient-to-br from-white via-white/90 to-white/70">
                 Content Safety Intelligence
@@ -133,15 +133,13 @@ const Index = () => {
             <div className="relative w-full max-w-lg mt-4">
               <div className="absolute inset-0 flex items-center justify-center">
                 <a href="#analyzer">
-                  <GlowingButton 
-                    glowColor="rgba(155, 135, 245, 0.7)"
-                    hoverScale={true}
-                    pulseEffect={true}
-                    className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base"
+                  <MovingBorderButton
+                    borderRadius="1.75rem"
+                    className="px-8 py-3.5 bg-primary text-white shadow-lg font-medium text-base"
                   >
                     <span>Try Analyzer</span>
                     <Shield className="h-5 w-5 ml-2" />
-                  </GlowingButton>
+                  </MovingBorderButton>
                 </a>
               </div>
             </div>
@@ -183,10 +181,10 @@ const Index = () => {
       <section id="extension" ref={extensionRef} className="py-20 scroll-mt-24 my-8 relative">
         <BackgroundBeams 
           color="#6E59A5"
-          beamCount={6}
+          beamCount={8}
           beamOpacity={0.3}
           beamSpread={0.5}
-          waveSpeed={15}
+          waveSpeed={12}
         />
         
         <div className="max-w-5xl mx-auto px-4 relative z-10">
@@ -212,13 +210,13 @@ const Index = () => {
               </ul>
               
               <div className="flex flex-wrap gap-4">
-                <GlowingButton 
-                  className="bg-primary hover:bg-primary/90 text-white"
-                  glowColor="rgba(155, 135, 245, 0.6)"
+                <MovingBorderButton
+                  className="bg-primary text-white"
+                  borderRadius="0.75rem"
                 >
                   <span>Check Out Extension</span>
                   <ExternalLink className="h-4 w-4 ml-2" />
-                </GlowingButton>
+                </MovingBorderButton>
                 
                 <Button variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2">
                   <ExternalLink className="h-4 w-4 mr-2" />
@@ -269,7 +267,7 @@ const Index = () => {
         </div>
       </section>
       
-      {/* Content Analyzer Section with Simplified Design */}
+      {/* Content Analyzer Section with Clean Design */}
       <section id="analyzer" className="py-20 scroll-mt-24">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12 scroll-animate">
@@ -279,7 +277,7 @@ const Index = () => {
             </p>
           </div>
           
-          <div className="bg-gray-800/40 rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
+          <div className="bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-gray-700/30 shadow-2xl p-6 md:p-8 scroll-animate">
             <TextAnalyzer />
           </div>
         </div>
@@ -315,9 +313,9 @@ const Index = () => {
       <section id="about" ref={aboutRef} className="py-20 scroll-mt-24 relative">
         <BackgroundBeams 
           color="#8B5CF6"
-          beamCount={5}
+          beamCount={10}
           beamOpacity={0.3}
-          waveSpeed={12}
+          waveSpeed={10}
         />
         
         <div className="max-w-4xl mx-auto px-4 relative z-10">
