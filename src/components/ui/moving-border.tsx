@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   borderRadius?: string;
   children: React.ReactNode;
-  as?: string;
+  as?: "button" | "div" | "a";
   containerClassName?: string;
   borderClassName?: string;
   duration?: number;
@@ -43,7 +43,7 @@ export const Button = ({
         }}
       ></div>
 
-      <div
+      <Component
         className={cn(
           "relative z-10 bg-gray-900 rounded-lg text-white flex items-center justify-center",
           className
@@ -52,18 +52,20 @@ export const Button = ({
         {...otherProps}
       >
         {children}
-      </div>
+      </Component>
 
-      <style jsx>{`
-        @keyframes moving-gradient {
-          0% {
-            --moving-gradient-angle: 0deg;
+      <style>
+        {`
+          @keyframes moving-gradient {
+            0% {
+              --moving-gradient-angle: 0deg;
+            }
+            100% {
+              --moving-gradient-angle: 360deg;
+            }
           }
-          100% {
-            --moving-gradient-angle: 360deg;
-          }
-        }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
