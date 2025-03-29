@@ -9,7 +9,6 @@ export const BackgroundBeams = ({
   beamSpread = 0.2,
   waveSpeed = 10,
   randomize = true,
-  children
 }: {
   className?: string;
   color?: string;
@@ -18,12 +17,9 @@ export const BackgroundBeams = ({
   beamSpread?: number;
   waveSpeed?: number;
   randomize?: boolean;
-  children?: React.ReactNode;
 }) => {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: window.innerWidth, height: window.innerHeight });
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isHovering, setIsHovering] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -33,20 +29,8 @@ export const BackgroundBeams = ({
       });
     };
 
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({
-        x: e.clientX,
-        y: e.clientY
-      });
-    };
-
     window.addEventListener('resize', handleResize);
-    window.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
@@ -129,39 +113,19 @@ export const BackgroundBeams = ({
       `;
       document.head.appendChild(styleElement);
       
-      // Add interactive effect that reacts to mouse movement
-      if (isHovering) {
-        const dx = mousePosition.x - startX;
-        const dy = mousePosition.y - svgHeight / 2;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDistance = Math.sqrt(svgWidth * svgWidth + svgHeight * svgHeight) / 2;
-        const influence = Math.max(0, 1 - distance / maxDistance) * 30;
-        
-        const newControlX1 = controlX1 + (mousePosition.x - controlX1) * influence / 500;
-        const newControlY1 = controlY1 + (mousePosition.y - controlY1) * influence / 500;
-        
-        path.setAttribute('d', `M${startX},${startY} C${newControlX1},${newControlY1} ${controlX2},${controlY2} ${endX},${endY}`);
-      }
-      
       svg.appendChild(path);
       generatedPaths.push(path);
     }
-
-    // Add event listeners for hover effects
-    svg.addEventListener('mouseenter', () => setIsHovering(true));
-    svg.addEventListener('mouseleave', () => setIsHovering(false));
 
     // Cleanup function
     return () => {
       generatedPaths.forEach(path => path.remove());
       document.querySelectorAll(`style[id^="beam-style"]`).forEach(elem => elem.remove());
-      svg.removeEventListener('mouseenter', () => setIsHovering(true));
-      svg.removeEventListener('mouseleave', () => setIsHovering(false));
     };
-  }, [beamCount, beamOpacity, color, dimensions, beamSpread, waveSpeed, randomize, mousePosition, isHovering]);
+  }, [beamCount, beamOpacity, color, dimensions, beamSpread, waveSpeed, randomize]);
 
   return (
-    <div className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`} aria-hidden="true">
+    <div className={`absolute inset-0 overflow-hidden pointer-events-none -z-10 ${className}`}>
       <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/20 z-10"></div>
       <svg 
         ref={svgRef}
@@ -170,7 +134,6 @@ export const BackgroundBeams = ({
       >
         {/* Paths will be dynamically generated */}
       </svg>
-      {children && <div className="relative z-20">{children}</div>}
     </div>
   );
 };

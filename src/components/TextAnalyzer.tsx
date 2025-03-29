@@ -1,9 +1,9 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link, Loader2, Shield } from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
 import { analyzeWithGemini } from '../utils/geminiApi';
 import AnalysisResult from './AnalysisResult';
-import AnalysisOutput from './AnalysisOutput';
 import AnimatedTransition from './AnimatedTransition';
 import ApiKeyForm from './ApiKeyForm';
 import { Switch } from '@/components/ui/switch';
@@ -14,7 +14,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import GlowingButton from './GlowingButton';
 
 const TextAnalyzer: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -69,6 +68,7 @@ const TextAnalyzer: React.FC = () => {
           description: error instanceof Error ? error.message : "An unexpected error occurred",
           variant: "destructive"
         });
+        // Set a fallback response explaining the issue
         setGeminiResponse("The Gemini API is currently unavailable. This could be due to maintenance, network issues, or the API key configuration. You can try again later or switch to the built-in analyzer.");
       } finally {
         setIsAnalyzing(false);
@@ -325,15 +325,13 @@ const TextAnalyzer: React.FC = () => {
         </Tabs>
         
         <div className="flex justify-end">
-          <GlowingButton
-            movingBorder={true}
+          <Button
             onClick={handleSubmit}
             disabled={isAnalyzing || 
               (selectedTab === 'text' && !inputText.trim()) || 
               (selectedTab === 'image' && !imageData) || 
               (selectedTab === 'link' && !mediaUrl.trim())}
-            className="px-6 py-3 bg-primary text-white"
-            borderRadius="0.75rem"
+            className="inline-flex items-center space-x-2 px-6 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm shadow-lg hover:shadow-primary/20 transition-all"
           >
             {isAnalyzing ? (
               <>
@@ -346,7 +344,7 @@ const TextAnalyzer: React.FC = () => {
                 <Shield className="h-4 w-4 ml-2" />
               </>
             )}
-          </GlowingButton>
+          </Button>
         </div>
         
         <div className="relative min-h-[200px]">
@@ -355,15 +353,44 @@ const TextAnalyzer: React.FC = () => {
           {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
           {useGemini && (
-            <AnalysisOutput 
-              content={geminiResponse} 
-              isAnalyzing={isAnalyzing}
-              type={geminiResponse && geminiResponse.toLowerCase().includes('error') ? 'error' : 'regular'}
-            />
+            <Card className="bg-gray-800/70 border-gray-700/50 shadow-lg">
+              <CardContent className="p-6">
+                {isAnalyzing ? (
+                  <div className="flex flex-col items-center justify-center py-10 space-y-4">
+                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-gray-300">Analyzing with Gemini AI...</p>
+                  </div>
+                ) : geminiResponse ? (
+                  <div className="prose prose-sm max-w-none prose-invert">
+                    <div className="whitespace-pre-line rounded-lg bg-gray-900/60 p-6 overflow-auto text-gray-200 leading-relaxed">
+                      {geminiResponse}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-2 py-10">
+                    <AlertTriangle className="h-12 w-12 text-gray-600 mx-auto" />
+                    <p className="text-gray-400 text-lg">No analysis results yet</p>
+                    <p className="text-gray-500 text-sm max-w-md mx-auto">
+                      Select your content type, enter or upload your content, and click "Analyze Content" to begin
+                    </p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           )}
           
           {!isAnalyzing && !result && !geminiResponse && (
-            <AnalysisOutput content={null} isAnalyzing={false} />
+            <Card className="bg-gray-800/70 border-gray-700/50">
+              <CardContent className="p-6 flex items-center justify-center">
+                <div className="text-center space-y-2 py-10">
+                  <AlertTriangle className="h-12 w-12 text-gray-600 mx-auto" />
+                  <p className="text-gray-400 text-lg">No analysis results yet</p>
+                  <p className="text-gray-500 text-sm max-w-md mx-auto">
+                    Select your content type, enter or upload your content, and click "Analyze Content" to begin
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
