@@ -2,8 +2,6 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-type ElementType = React.ElementType;
-
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   borderRadius?: string;
   children: React.ReactNode;
@@ -12,6 +10,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   borderClassName?: string;
   duration?: number;
   className?: string;
+  href?: string; // Added for anchor elements
 }
 
 export const Button = ({
@@ -34,12 +33,16 @@ export const Button = ({
             className
           )}
           style={{ borderRadius: `calc(${borderRadius} - 1px)` }}
-          {...otherProps}
+          {...otherProps as React.ButtonHTMLAttributes<HTMLButtonElement>}
         >
           {children}
         </button>
       );
     } else if (Component === "a") {
+      // Extract only the props that are valid for anchor elements
+      const { href, target, rel, onClick, ...anchorProps } = otherProps as any;
+      const anchorSpecificProps = { href, target, rel, onClick };
+      
       return (
         <a
           className={cn(
@@ -47,12 +50,16 @@ export const Button = ({
             className
           )}
           style={{ borderRadius: `calc(${borderRadius} - 1px)` }}
-          {...(otherProps as React.AnchorHTMLAttributes<HTMLAnchorElement>)}
+          {...anchorSpecificProps}
         >
           {children}
         </a>
       );
     } else {
+      // Extract only the props that are valid for div elements
+      const { onClick, onKeyDown, tabIndex, role, ...divProps } = otherProps as any;
+      const divSpecificProps = { onClick, onKeyDown, tabIndex, role };
+      
       return (
         <div
           className={cn(
@@ -60,7 +67,7 @@ export const Button = ({
             className
           )}
           style={{ borderRadius: `calc(${borderRadius} - 1px)` }}
-          {...(otherProps as React.HTMLAttributes<HTMLDivElement>)}
+          {...divSpecificProps}
         >
           {children}
         </div>
