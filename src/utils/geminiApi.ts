@@ -8,8 +8,8 @@ export const analyzeWithGemini = async (
   try {
     console.info('Starting analysis with Gemini...');
     
-    // Fetch API key from Supabase function with correct path and protocol
-    const apiKeyResponse = await fetch('/api/functions/get-gemini-key', {
+    // Fetch API key from Supabase function with full URL
+    const apiKeyResponse = await fetch('https://hardtowtofuuzejggihn.supabase.co/functions/v1/get-gemini-key', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -22,18 +22,9 @@ export const analyzeWithGemini = async (
       throw new Error(`Failed to retrieve API key: ${apiKeyResponse.status}`);
     }
     
-    // Validate that the response is proper JSON before parsing
-    const responseText = await apiKeyResponse.text();
-    let apiKeyData;
+    const apiKeyData = await apiKeyResponse.json();
     
-    try {
-      apiKeyData = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Invalid JSON response from API key endpoint:', responseText.substring(0, 100) + '...');
-      throw new Error('Invalid response format from API key service');
-    }
-    
-    console.info('Successfully parsed API key response');
+    console.info('Successfully retrieved API key response');
     
     if (!apiKeyData.key) {
       console.error('API key missing from response:', apiKeyData);

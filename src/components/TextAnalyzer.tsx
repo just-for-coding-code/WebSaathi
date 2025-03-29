@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link, Loader2, Shield } from 'lucide-react';
+import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link, Loader2, Shield, CheckCircle } from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
 import { analyzeWithGemini } from '../utils/geminiApi';
 import AnalysisResult from './AnalysisResult';
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from '@/components/ui/button';
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from '@/hooks/use-toast';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import CardSpotlight from './CardSpotlight';
 import BackgroundBeams from './BackgroundBeams';
@@ -119,6 +119,48 @@ const TextAnalyzer: React.FC = () => {
     } else if (selectedTab === 'link') {
       setMediaUrl(prompt);
     }
+  };
+
+  // Function to format Gemini response for better readability
+  const formatGeminiResponse = (response: string) => {
+    if (!response) return [];
+    
+    // Split by double newlines to separate sections
+    return response.split('\n\n').map((paragraph, idx) => {
+      // Check for headers
+      if (paragraph.startsWith('# ')) {
+        return {
+          type: 'heading1',
+          content: paragraph.replace('# ', ''),
+          id: `h1-${idx}`
+        };
+      } 
+      else if (paragraph.startsWith('## ')) {
+        return {
+          type: 'heading2',
+          content: paragraph.replace('## ', ''),
+          id: `h2-${idx}`
+        };
+      }
+      // Check for bullet points
+      else if (paragraph.includes('\n- ')) {
+        const [listTitle, ...listItems] = paragraph.split('\n- ');
+        return {
+          type: 'list',
+          title: listTitle.trim(),
+          items: listItems.map(item => item.trim()),
+          id: `list-${idx}`
+        };
+      }
+      // Regular paragraph
+      else {
+        return {
+          type: 'paragraph',
+          content: paragraph.trim(),
+          id: `p-${idx}`
+        };
+      }
+    });
   };
 
   return (
@@ -371,22 +413,44 @@ const TextAnalyzer: React.FC = () => {
                   </div>
                 ) : geminiResponse ? (
                   <div className="prose prose-sm max-w-none prose-invert">
-                    <div className="whitespace-pre-line rounded-lg bg-gray-900/60 p-6 overflow-auto text-gray-200 leading-relaxed">
-                      {geminiResponse.split('\n\n').map((paragraph, index) => (
-                        <React.Fragment key={index}>
-                          {paragraph.startsWith('# ') ? (
-                            <h3 className="text-lg font-bold text-white mt-4 mb-2">{paragraph.replace('# ', '')}</h3>
-                          ) : paragraph.startsWith('## ') ? (
-                            <h4 className="text-md font-semibold text-gray-200 mt-3 mb-1">{paragraph.replace('## ', '')}</h4>
-                          ) : paragraph.startsWith('- ') ? (
-                            <ul className="list-disc list-inside my-2">
-                              <li className="text-gray-300">{paragraph.replace('- ', '')}</li>
-                            </ul>
-                          ) : (
-                            <p className="mb-3 text-gray-300">{paragraph}</p>
-                          )}
-                        </React.Fragment>
-                      ))}
+                    <div className="rounded-lg bg-gray-900/60 overflow-auto">
+                      <div className="p-6">
+                        {formatGeminiResponse(geminiResponse).map((section) => {
+                          if (section.type === 'heading1') {
+                            return (
+                              <h3 key={section.id} className="text-xl font-bold text-white mt-4 mb-3 border-b border-gray-700 pb-2">
+                                {section.content}
+                              </h3>
+                            );
+                          } else if (section.type === 'heading2') {
+                            return (
+                              <h4 key={section.id} className="text-lg font-semibold text-primary/90 mt-3 mb-2">
+                                {section.content}
+                              </h4>
+                            );
+                          } else if (section.type === 'list') {
+                            return (
+                              <div key={section.id} className="my-3 bg-gray-800/50 rounded-lg p-4">
+                                {section.title && <p className="font-medium text-gray-200 mb-2">{section.title}</p>}
+                                <ul className="space-y-1">
+                                  {section.items.map((item, i) => (
+                                    <li key={`${section.id}-item-${i}`} className="flex items-start">
+                                      <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                                      <span className="text-gray-300">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <p key={section.id} className="mb-3 text-gray-300 leading-relaxed">
+                                {section.content}
+                              </p>
+                            );
+                          }
+                        })}
+                      </div>
                     </div>
                   </div>
                 ) : (
