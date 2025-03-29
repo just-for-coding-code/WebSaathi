@@ -1,10 +1,11 @@
 
 import React from 'react';
 import { 
-  Shield, AlertTriangle, CheckCircle, XCircle, AlertOctagon 
+  Shield, AlertTriangle, CheckCircle, XCircle, AlertOctagon, Info, FileBarChart
 } from 'lucide-react';
 import { AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
 import AnimatedTransition from './AnimatedTransition';
+import CardSpotlight from './CardSpotlight';
 
 interface AnalysisResultProps {
   result: AnalysisResultType | null;
@@ -105,7 +106,15 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
 
   return (
     <AnimatedTransition show={!!result} type="scale" className="overflow-hidden">
-      <div className={`rounded-2xl shadow-glass p-6 backdrop-blur-sm border border-gray-700/30 ${getBgColor()}`}>
+      <CardSpotlight
+        borderGlow
+        spotlightColor={
+          result.category === 'safe' 
+            ? 'rgba(39, 174, 96, 0.15)' 
+            : 'rgba(229, 57, 53, 0.15)'
+        }
+        className={`rounded-2xl shadow-glass p-6 backdrop-blur-sm border border-gray-700/30 ${getBgColor()}`}
+      >
         <div className="flex items-center">
           {getStatusIcon()}
           <div className="ml-3">
@@ -124,21 +133,27 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
         </div>
 
         <div className="mt-6 space-y-4">
-          <div>
-            <h4 className="text-sm font-medium text-white">Reason</h4>
-            <p className="mt-1 text-sm text-gray-400">{result.reason}</p>
+          <div className="p-4 rounded-lg bg-gray-900/60 border border-gray-700/50">
+            <h4 className="text-sm font-medium text-white flex items-center">
+              <Info className="h-4 w-4 mr-2 text-primary/70" />
+              Analysis Summary
+            </h4>
+            <p className="mt-2 text-sm text-gray-300 leading-relaxed">{result.reason}</p>
           </div>
 
           {result.complianceCheck && (
-            <div>
-              <h4 className="text-sm font-medium text-white">Compliance Reference</h4>
-              <p className="mt-1 text-sm text-gray-400">{result.complianceCheck}</p>
+            <div className="p-4 rounded-lg bg-gray-900/60 border border-gray-700/50">
+              <h4 className="text-sm font-medium text-white flex items-center">
+                <FileBarChart className="h-4 w-4 mr-2 text-primary/70" />
+                Compliance Reference
+              </h4>
+              <p className="mt-2 text-sm text-gray-300 leading-relaxed">{result.complianceCheck}</p>
             </div>
           )}
 
           <div>
-            <h4 className="text-sm font-medium text-white">Confidence</h4>
-            <div className="mt-2 relative w-full h-2 bg-gray-700 rounded-full overflow-hidden">
+            <h4 className="text-sm font-medium text-white mb-2">Detection Confidence</h4>
+            <div className="relative w-full h-3 bg-gray-700 rounded-full overflow-hidden">
               <div 
                 className={`absolute left-0 top-0 h-full rounded-full ${
                   result.category === 'safe' ? 'bg-harm-safe' : `bg-${getCategoryColor().split('-')[1]}`
@@ -146,12 +161,20 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
                 style={{ width: `${result.confidence * 100}%` }}
               />
             </div>
-            <div className="mt-1 text-xs text-right text-gray-400">
-              {Math.round(result.confidence * 100)}%
+            <div className="mt-2 flex justify-between text-xs text-gray-400">
+              <span>Low</span>
+              <span>{Math.round(result.confidence * 100)}%</span>
+              <span>High</span>
             </div>
           </div>
+          
+          <div className="mt-4 text-sm text-gray-400 border-t border-gray-700/30 pt-4">
+            <p className="italic">
+              This analysis was performed using our advanced content safety AI. Results should be reviewed by a human.
+            </p>
+          </div>
         </div>
-      </div>
+      </CardSpotlight>
     </AnimatedTransition>
   );
 };
