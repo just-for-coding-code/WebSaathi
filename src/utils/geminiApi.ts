@@ -42,7 +42,7 @@ export const analyzeWithGemini = async (
     console.info('Sending request to Gemini API...');
     
     // Updated API endpoint to use the generative AI v1 endpoint instead of v1beta
-    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-2.5-pro-exp-03-25:generateContent', {
+    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
