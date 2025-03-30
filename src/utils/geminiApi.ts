@@ -41,8 +41,8 @@ export const analyzeWithGemini = async (
     
     console.info('Sending request to Gemini API...');
     
-    // Make request to Gemini API
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
+    // Updated API endpoint to use the generative AI v1 endpoint instead of v1beta
+    const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
