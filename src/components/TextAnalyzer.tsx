@@ -1,6 +1,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link, Loader2, Shield, CheckCircle } from 'lucide-react';
+import { 
+  Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link as LinkIcon, 
+  Loader2, Shield, CheckCircle, AlertCircle, ArrowRight, ExternalLink
+} from 'lucide-react';
 import { analyzeContent, AnalysisResult as AnalysisResultType } from '../utils/analyzeContent';
 import { analyzeWithGemini } from '../utils/geminiApi';
 import AnalysisResult from './AnalysisResult';
@@ -16,6 +19,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import CardSpotlight from './CardSpotlight';
 import BackgroundBeams from './BackgroundBeams';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 const TextAnalyzer: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -29,6 +34,8 @@ const TextAnalyzer: React.FC = () => {
   const [mediaType, setMediaType] = useState<'video' | 'audio' | 'image'>('image');
   const [imageData, setImageData] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const resultSectionRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,6 +70,13 @@ const TextAnalyzer: React.FC = () => {
       try {
         const response = await analyzeWithGemini(contentToAnalyze, contentType);
         setGeminiResponse(response);
+        
+        // Auto-scroll to results on mobile
+        if (isMobile && resultSectionRef.current) {
+          setTimeout(() => {
+            resultSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 300);
+        }
       } catch (error) {
         console.error('Error with Gemini analysis:', error);
         toast({
@@ -78,6 +92,13 @@ const TextAnalyzer: React.FC = () => {
         const analysisResult = analyzeContent(contentToAnalyze);
         setResult(analysisResult);
         setIsAnalyzing(false);
+        
+        // Auto-scroll to results on mobile
+        if (isMobile && resultSectionRef.current) {
+          setTimeout(() => {
+            resultSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }, 300);
+        }
       }, 1000);
     }
   };
@@ -86,10 +107,21 @@ const TextAnalyzer: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Add file size validation
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+      toast({
+        title: "File too large",
+        description: "Please upload an image smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
         setImageData(event.target.result as string);
+        setShowHint(false);
       }
     };
     reader.readAsDataURL(file);
@@ -116,6 +148,7 @@ const TextAnalyzer: React.FC = () => {
   const handleExampleClick = (prompt: string) => {
     if (selectedTab === 'text') {
       setInputText(prompt);
+      setShowHint(false);
     } else if (selectedTab === 'link') {
       setMediaUrl(prompt);
     }
@@ -165,16 +198,18 @@ const TextAnalyzer: React.FC = () => {
 
   return (
     <div className="w-full max-w-3xl mx-auto relative">
-      <div className="mb-8 space-y-2">
-        <h2 className="text-2xl font-bold text-white">Content Analysis</h2>
-        <p className="text-gray-300">
+      <div className="mb-6 sm:mb-8 space-y-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-white" id="content-analysis-heading">
+          Content Analysis
+        </h2>
+        <p className="text-sm sm:text-base text-gray-300">
           Analyze content for potentially harmful elements using advanced AI technology
         </p>
       </div>
       
-      <div className="space-y-8">
-        <div className="flex items-center space-x-3 justify-end mb-4 bg-gray-800/50 p-3 rounded-lg border border-gray-700/30">
-          <Label htmlFor="gemini-toggle" className="text-sm text-gray-300 font-medium">
+      <div className="space-y-6 sm:space-y-8">
+        <div className="flex items-center space-x-3 justify-end mb-2 sm:mb-4 bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/30">
+          <Label htmlFor="gemini-toggle" className="text-xs sm:text-sm text-gray-300 font-medium">
             Use Gemini AI
           </Label>
           <Switch 
@@ -188,60 +223,72 @@ const TextAnalyzer: React.FC = () => {
         <Tabs 
           defaultValue="text" 
           className="w-full" 
-          onValueChange={(value) => setSelectedTab(value as 'text' | 'image' | 'link')}
+          onValueChange={(value) => {
+            setSelectedTab(value as 'text' | 'image' | 'link');
+            setShowHint(true);
+          }}
+          aria-label="Content type selection"
         >
-          <TabsList className="grid grid-cols-3 mb-6 bg-gray-800/70 border border-gray-700/30 p-1 rounded-lg">
+          <TabsList className="grid grid-cols-3 mb-4 sm:mb-6 bg-gray-800/70 border border-gray-700/30 p-1 rounded-lg">
             <TabsTrigger 
               value="text" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-2"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 sm:py-2 text-xs sm:text-sm"
+              aria-label="Analyze text content"
             >
-              <FileText className="h-4 w-4 mr-2" />
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Text
             </TabsTrigger>
             <TabsTrigger 
               value="image" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-2"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 sm:py-2 text-xs sm:text-sm"
+              aria-label="Analyze image content"
             >
-              <Image className="h-4 w-4 mr-2" />
+              <Image className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Image
             </TabsTrigger>
             <TabsTrigger 
               value="link" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-2"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 sm:py-2 text-xs sm:text-sm"
+              aria-label="Analyze media URL"
             >
-              <Link className="h-4 w-4 mr-2" />
+              <LinkIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Media URL
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="text" className="space-y-4">
+          <TabsContent value="text" className="space-y-3 sm:space-y-4">
             <div className="relative">
               <Textarea
                 value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
+                onChange={(e) => {
+                  setInputText(e.target.value);
+                  if (e.target.value) setShowHint(false);
+                }}
                 placeholder="Enter text to analyze..."
-                className="w-full min-h-40 px-4 py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 resize-none text-white"
+                className="w-full min-h-32 sm:min-h-40 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 resize-none text-white text-sm"
                 disabled={isAnalyzing}
+                aria-label="Text content to analyze"
               />
               
               <AnimatedTransition show={showHint && selectedTab === 'text'} type="fade" className="absolute inset-0 pointer-events-none">
-                <div className="h-full flex flex-col items-center justify-center p-4 space-y-3">
-                  <Info className="h-5 w-5 text-primary/60" />
-                  <p className="text-sm text-center text-gray-400">
+                <div className="h-full flex flex-col items-center justify-center p-4 space-y-2 sm:space-y-3">
+                  <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary/60" />
+                  <p className="text-xs sm:text-sm text-center text-gray-400">
                     Enter text that you want to analyze for harmful content
                   </p>
                 </div>
               </AnimatedTransition>
             </div>
             
-            <div className="space-y-3">
-              <h3 className="text-sm font-medium text-gray-300">Example prompts:</h3>
-              <div className="flex flex-wrap gap-2">
+            <div className="space-y-2 sm:space-y-3">
+              <h3 className="text-xs sm:text-sm font-medium text-gray-300">Example prompts:</h3>
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {examplePrompts.map((prompt, index) => (
                   <button
                     key={index}
                     onClick={() => handleExampleClick(prompt)}
-                    className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                    className="text-2xs sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                    aria-label={`Use example: ${prompt.substring(0, 30)}${prompt.length > 30 ? '...' : ''}`}
                   >
                     {prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt}
                   </button>
@@ -250,10 +297,23 @@ const TextAnalyzer: React.FC = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="image" className="space-y-6">
+          <TabsContent value="image" className="space-y-4 sm:space-y-6">
             <div 
-              className="flex flex-col items-center justify-center p-10 border-2 border-dashed border-gray-700 rounded-xl bg-gray-800/40 hover:bg-gray-800/60 transition-colors cursor-pointer relative overflow-hidden group" 
+              className={cn(
+                "flex flex-col items-center justify-center p-6 sm:p-10 border-2 border-dashed border-gray-700 rounded-xl",
+                "bg-gray-800/40 hover:bg-gray-800/60 transition-colors cursor-pointer relative overflow-hidden group",
+                "focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-gray-900"
+              )}
               onClick={triggerFileInput}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  triggerFileInput();
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label="Upload an image"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               
@@ -263,44 +323,53 @@ const TextAnalyzer: React.FC = () => {
                 onChange={handleFileUpload} 
                 accept="image/*" 
                 className="hidden" 
+                aria-hidden="true"
               />
               
               {imageData ? (
-                <div className="w-full space-y-4">
-                  <div className="relative w-full h-48 rounded-lg overflow-hidden border border-gray-700">
+                <div className="w-full space-y-3 sm:space-y-4">
+                  <div className="relative w-full h-36 sm:h-48 rounded-lg overflow-hidden border border-gray-700">
                     <img 
                       src={imageData} 
-                      alt="Uploaded content" 
+                      alt="Uploaded content for analysis" 
                       className="w-full h-full object-cover" 
                     />
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Button variant="outline" size="sm" onClick={triggerFileInput} className="bg-gray-900/80 border-gray-700 text-white hover:bg-gray-800">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          triggerFileInput();
+                        }}
+                        className="bg-gray-900/80 border-gray-700 text-white hover:bg-gray-800 text-xs sm:text-sm"
+                      >
                         Replace
                       </Button>
                     </div>
                   </div>
-                  <p className="text-sm text-center text-gray-300">
+                  <p className="text-xs sm:text-sm text-center text-gray-300">
                     Image uploaded. Click to change.
                   </p>
                 </div>
               ) : (
                 <>
-                  <Upload className="h-10 w-10 text-gray-500 mb-4" />
-                  <p className="text-sm font-medium text-gray-300 mb-1">
+                  <Upload className="h-8 w-8 sm:h-10 sm:w-10 text-gray-500 mb-3 sm:mb-4" aria-hidden="true" />
+                  <p className="text-xs sm:text-sm font-medium text-gray-300 mb-1">
                     Click to upload an image
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Supported formats: JPG, PNG, GIF, WEBP
+                  <p className="text-2xs sm:text-xs text-gray-500">
+                    Supported formats: JPG, PNG, GIF, WEBP (max 5MB)
                   </p>
                 </>
               )}
             </div>
           </TabsContent>
           
-          <TabsContent value="link" className="space-y-4">
-            <div className="space-y-4">
-              <div className="flex flex-col space-y-2">
-                <Label htmlFor="media-url" className="text-sm text-gray-300 font-medium">
+          <TabsContent value="link" className="space-y-3 sm:space-y-4">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex flex-col space-y-1.5 sm:space-y-2">
+                <Label htmlFor="media-url" className="text-xs sm:text-sm text-gray-300 font-medium">
                   Enter URL to analyze
                 </Label>
                 <Textarea
@@ -308,54 +377,74 @@ const TextAnalyzer: React.FC = () => {
                   value={mediaUrl}
                   onChange={(e) => setMediaUrl(e.target.value)}
                   placeholder="https://example.com/content"
-                  className="w-full px-4 py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 text-white resize-none h-24"
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 text-white resize-none h-20 sm:h-24 text-sm"
                   disabled={isAnalyzing}
+                  aria-label="Media URL to analyze"
                 />
               </div>
               
-              <div className="flex flex-col space-y-2">
-                <Label className="text-sm text-gray-300 font-medium">
+              <div className="flex flex-col space-y-1.5 sm:space-y-2">
+                <Label className="text-xs sm:text-sm text-gray-300 font-medium">
                   Content type
                 </Label>
-                <div className="flex space-x-2">
+                <div className="flex space-x-1.5 sm:space-x-2">
                   <Button
                     type="button"
                     variant={mediaType === 'image' ? 'default' : 'outline'}
                     onClick={() => setMediaType('image')}
-                    className={`flex-1 ${mediaType === 'image' ? 'bg-primary' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+                    className={cn(
+                      "flex-1 text-xs sm:text-sm py-1.5 h-auto",
+                      mediaType === 'image' 
+                        ? "bg-primary" 
+                        : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+                    )}
+                    aria-pressed={mediaType === 'image'}
                   >
-                    <Image className="h-4 w-4 mr-2" />
+                    <Image className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
                     Image
                   </Button>
                   <Button
                     type="button"
                     variant={mediaType === 'video' ? 'default' : 'outline'}
                     onClick={() => setMediaType('video')}
-                    className={`flex-1 ${mediaType === 'video' ? 'bg-primary' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+                    className={cn(
+                      "flex-1 text-xs sm:text-sm py-1.5 h-auto",
+                      mediaType === 'video' 
+                        ? "bg-primary" 
+                        : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+                    )}
+                    aria-pressed={mediaType === 'video'}
                   >
-                    <Video className="h-4 w-4 mr-2" />
+                    <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
                     Video
                   </Button>
                   <Button
                     type="button"
                     variant={mediaType === 'audio' ? 'default' : 'outline'}
                     onClick={() => setMediaType('audio')}
-                    className={`flex-1 ${mediaType === 'audio' ? 'bg-primary' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white'}`}
+                    className={cn(
+                      "flex-1 text-xs sm:text-sm py-1.5 h-auto",
+                      mediaType === 'audio' 
+                        ? "bg-primary" 
+                        : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
+                    )}
+                    aria-pressed={mediaType === 'audio'}
                   >
-                    <Music className="h-4 w-4 mr-2" />
+                    <Music className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
                     Audio
                   </Button>
                 </div>
               </div>
               
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium text-gray-300">Example URLs:</h3>
-                <div className="flex flex-wrap gap-2">
+              <div className="space-y-2 sm:space-y-3">
+                <h3 className="text-xs sm:text-sm font-medium text-gray-300">Example URLs:</h3>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {exampleUrls.map((url, index) => (
                     <button
                       key={index}
                       onClick={() => handleExampleClick(url)}
-                      className="text-xs px-3 py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                      className="text-2xs sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                      aria-label={`Use example URL: ${url.substring(0, 30)}${url.length > 30 ? '...' : ''}`}
                     >
                       {url.length > 30 ? url.substring(0, 30) + '...' : url}
                     </button>
@@ -373,18 +462,19 @@ const TextAnalyzer: React.FC = () => {
               (selectedTab === 'text' && !inputText.trim()) || 
               (selectedTab === 'image' && !imageData) || 
               (selectedTab === 'link' && !mediaUrl.trim())}
-            className="relative inline-flex items-center space-x-2 px-6 py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm shadow-lg hover:shadow-primary/20 transition-all overflow-hidden group"
+            className="relative inline-flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm shadow-lg hover:shadow-primary/20 transition-all overflow-hidden group"
+            aria-label="Analyze content"
           >
             <span className="relative z-10 flex items-center">
               {isAnalyzing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin mr-1.5 sm:mr-2" aria-hidden="true" />
                   <span>Analyzing...</span>
                 </>
               ) : (
                 <>
                   <span>Analyze Content</span>
-                  <Shield className="h-4 w-4 ml-2" />
+                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 ml-1.5 sm:ml-2" aria-hidden="true" />
                 </>
               )}
             </span>
@@ -394,8 +484,8 @@ const TextAnalyzer: React.FC = () => {
           </Button>
         </div>
         
-        <div className="relative min-h-[200px]">
-          <h3 className="text-xl font-bold text-white mb-6">Analysis Results</h3>
+        <div className="relative min-h-[200px]" ref={resultSectionRef} aria-live="polite">
+          <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6" id="analysis-results-heading">Analysis Results</h3>
           
           {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
@@ -405,38 +495,38 @@ const TextAnalyzer: React.FC = () => {
               className="bg-gray-800/70 border-gray-700/50 shadow-lg"
               spotlightColor="rgba(138, 120, 245, 0.1)"
             >
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 {isAnalyzing ? (
-                  <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                    <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-gray-300">Analyzing with Gemini AI...</p>
+                  <div className="flex flex-col items-center justify-center py-8 sm:py-10 space-y-3 sm:space-y-4">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 border-3 sm:border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm sm:text-base text-gray-300">Analyzing with Gemini AI...</p>
                   </div>
                 ) : geminiResponse ? (
                   <div className="prose prose-sm max-w-none prose-invert">
                     <div className="rounded-lg bg-gray-900/60 overflow-auto">
-                      <div className="p-6">
+                      <div className="p-4 sm:p-6">
                         {formatGeminiResponse(geminiResponse).map((section) => {
                           if (section.type === 'heading1') {
                             return (
-                              <h3 key={section.id} className="text-xl font-bold text-white mt-4 mb-3 border-b border-gray-700 pb-2">
+                              <h3 key={section.id} className="text-lg sm:text-xl font-bold text-white mt-3 sm:mt-4 mb-2 sm:mb-3 border-b border-gray-700 pb-2">
                                 {section.content}
                               </h3>
                             );
                           } else if (section.type === 'heading2') {
                             return (
-                              <h4 key={section.id} className="text-lg font-semibold text-primary/90 mt-3 mb-2">
+                              <h4 key={section.id} className="text-base sm:text-lg font-semibold text-primary/90 mt-2 sm:mt-3 mb-1.5 sm:mb-2">
                                 {section.content}
                               </h4>
                             );
                           } else if (section.type === 'list') {
                             return (
-                              <div key={section.id} className="my-3 bg-gray-800/50 rounded-lg p-4">
-                                {section.title && <p className="font-medium text-gray-200 mb-2">{section.title}</p>}
+                              <div key={section.id} className="my-2 sm:my-3 bg-gray-800/50 rounded-lg p-3 sm:p-4">
+                                {section.title && <p className="font-medium text-sm sm:text-base text-gray-200 mb-1.5 sm:mb-2">{section.title}</p>}
                                 <ul className="space-y-1">
                                   {section.items.map((item, i) => (
                                     <li key={`${section.id}-item-${i}`} className="flex items-start">
-                                      <span className="inline-flex mr-2 mt-1 text-primary">•</span>
-                                      <span className="text-gray-300">{item}</span>
+                                      <span className="inline-flex mr-1.5 sm:mr-2 mt-1 text-primary">•</span>
+                                      <span className="text-xs sm:text-sm text-gray-300">{item}</span>
                                     </li>
                                   ))}
                                 </ul>
@@ -444,7 +534,7 @@ const TextAnalyzer: React.FC = () => {
                             );
                           } else {
                             return (
-                              <p key={section.id} className="mb-3 text-gray-300 leading-relaxed">
+                              <p key={section.id} className="mb-2 sm:mb-3 text-xs sm:text-sm text-gray-300 leading-relaxed">
                                 {section.content}
                               </p>
                             );
@@ -454,10 +544,10 @@ const TextAnalyzer: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center space-y-2 py-10">
-                    <AlertTriangle className="h-12 w-12 text-gray-600 mx-auto" />
-                    <p className="text-gray-400 text-lg">No analysis results yet</p>
-                    <p className="text-gray-500 text-sm max-w-md mx-auto">
+                  <div className="text-center space-y-1.5 sm:space-y-2 py-8 sm:py-10">
+                    <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-gray-600 mx-auto" aria-hidden="true" />
+                    <p className="text-base sm:text-lg text-gray-400">No analysis results yet</p>
+                    <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
                       Select your content type, enter or upload your content, and click "Analyze Content" to begin
                     </p>
                   </div>
@@ -468,11 +558,11 @@ const TextAnalyzer: React.FC = () => {
           
           {!isAnalyzing && !result && !geminiResponse && (
             <Card className="bg-gray-800/70 border-gray-700/50">
-              <CardContent className="p-6 flex items-center justify-center">
-                <div className="text-center space-y-2 py-10">
-                  <AlertTriangle className="h-12 w-12 text-gray-600 mx-auto" />
-                  <p className="text-gray-400 text-lg">No analysis results yet</p>
-                  <p className="text-gray-500 text-sm max-w-md mx-auto">
+              <CardContent className="p-4 sm:p-6 flex items-center justify-center">
+                <div className="text-center space-y-1.5 sm:space-y-2 py-8 sm:py-10">
+                  <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-gray-600 mx-auto" aria-hidden="true" />
+                  <p className="text-base sm:text-lg text-gray-400">No analysis results yet</p>
+                  <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
                     Select your content type, enter or upload your content, and click "Analyze Content" to begin
                   </p>
                 </div>
