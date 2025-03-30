@@ -1,5 +1,6 @@
 
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export const analyzeWithGemini = async (
   content: string,
@@ -8,25 +9,17 @@ export const analyzeWithGemini = async (
   try {
     console.info('Starting analysis with Gemini...');
     
-    // Fetch API key from Supabase function with full URL
-    const apiKeyResponse = await fetch('https://hardtowtofuuzejggihn.supabase.co/functions/v1/get-gemini-key', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    // Use supabase.functions.invoke instead of direct fetch
+    const { data: apiKeyData, error: apiKeyError } = await supabase.functions.invoke('get-gemini-key');
     
-    if (!apiKeyResponse.ok) {
-      const errorText = await apiKeyResponse.text();
-      console.error('Failed to retrieve API key:', apiKeyResponse.status, errorText);
-      throw new Error(`Failed to retrieve API key: ${apiKeyResponse.status}`);
+    if (apiKeyError) {
+      console.error('Failed to retrieve API key:', apiKeyError);
+      throw new Error(`Failed to retrieve API key: ${apiKeyError.message}`);
     }
-    
-    const apiKeyData = await apiKeyResponse.json();
     
     console.info('Successfully retrieved API key response');
     
-    if (!apiKeyData.key) {
+    if (!apiKeyData?.key) {
       console.error('API key missing from response:', apiKeyData);
       throw new Error('API key missing from response');
     }
