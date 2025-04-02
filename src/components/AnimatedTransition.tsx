@@ -13,6 +13,11 @@ interface AnimatedTransitionProps {
   disableOnMobile?: boolean;
 }
 
+// Add Navigator deviceMemory interface to fix TypeScript error
+interface NavigatorWithMemory extends Navigator {
+  deviceMemory?: number;
+}
+
 const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
   show,
   children,
@@ -32,7 +37,7 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
   // Enhanced performance detection for improved mobile experience
   const isLowPerformanceDevice = typeof navigator !== 'undefined' && (
     navigator.hardwareConcurrency <= 4 || 
-    navigator.deviceMemory <= 4 || 
+    (navigator as NavigatorWithMemory).deviceMemory <= 4 || 
     /Android [456]/.test(navigator.userAgent)
   );
   
