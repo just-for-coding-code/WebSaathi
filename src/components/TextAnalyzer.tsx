@@ -21,6 +21,7 @@ import CardSpotlight from './CardSpotlight';
 import BackgroundBeams from './BackgroundBeams';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const TextAnalyzer: React.FC = () => {
   const [inputText, setInputText] = useState('');
@@ -33,9 +34,20 @@ const TextAnalyzer: React.FC = () => {
   const [mediaUrl, setMediaUrl] = useState('');
   const [mediaType, setMediaType] = useState<'video' | 'audio' | 'image'>('image');
   const [imageData, setImageData] = useState<string | null>(null);
+  const [openInfoDialog, setOpenInfoDialog] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const resultSectionRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
+  const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
+
+  // Check for reduced motion preference
+  useEffect(() => {
+    // Check if device is low-end or prefers reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isLowEndDevice = navigator.hardwareConcurrency <= 4;
+    
+    setShouldReduceMotion(prefersReducedMotion || isLowEndDevice);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +86,7 @@ const TextAnalyzer: React.FC = () => {
         // Auto-scroll to results on mobile
         if (isMobile && resultSectionRef.current) {
           setTimeout(() => {
-            resultSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            resultSectionRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? 'auto' : 'smooth' });
           }, 300);
         }
       } catch (error) {
@@ -96,7 +108,7 @@ const TextAnalyzer: React.FC = () => {
         // Auto-scroll to results on mobile
         if (isMobile && resultSectionRef.current) {
           setTimeout(() => {
-            resultSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            resultSectionRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? 'auto' : 'smooth' });
           }, 300);
         }
       }, 1000);
@@ -185,6 +197,25 @@ const TextAnalyzer: React.FC = () => {
           id: `list-${idx}`
         };
       }
+      // Check for structured format with confidence and severity
+      else if (paragraph.includes('**Confidence:**') && paragraph.includes('**Severity:**')) {
+        const content = paragraph;
+        const confidenceMatch = content.match(/\*\*Confidence:\*\*\s*(\d+)%/);
+        const severityMatch = content.match(/\*\*Severity:\*\*\s*(\w+)\s*\((\d+)\)/);
+        
+        const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : null;
+        const severityText = severityMatch ? severityMatch[1] : null;
+        const severityScore = severityMatch ? parseInt(severityMatch[2]) : null;
+        
+        return {
+          type: 'analysis-card',
+          content: content,
+          confidence: confidence,
+          severityText: severityText,
+          severityScore: severityScore,
+          id: `analysis-${idx}`
+        };
+      }
       // Regular paragraph
       else {
         return {
@@ -199,9 +230,21 @@ const TextAnalyzer: React.FC = () => {
   return (
     <div className="w-full max-w-3xl mx-auto relative">
       <div className="mb-6 sm:mb-8 space-y-2">
-        <h2 className="text-xl sm:text-2xl font-bold text-white" id="content-analysis-heading">
-          Content Analysis
-        </h2>
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl sm:text-2xl font-bold text-white" id="content-analysis-heading">
+            Content Analysis
+          </h2>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => setOpenInfoDialog(true)}
+            className="text-gray-400 hover:text-white hover:bg-gray-800"
+            aria-label="Learn more about content analysis"
+          >
+            <Info className="h-4 w-4 mr-1" />
+            Learn More
+          </Button>
+        </div>
         <p className="text-sm sm:text-base text-gray-300">
           Analyze content for potentially harmful elements using advanced AI technology
         </p>
@@ -270,7 +313,12 @@ const TextAnalyzer: React.FC = () => {
                 aria-label="Text content to analyze"
               />
               
-              <AnimatedTransition show={showHint && selectedTab === 'text'} type="fade" className="absolute inset-0 pointer-events-none">
+              <AnimatedTransition 
+                show={showHint && selectedTab === 'text'} 
+                type="fade" 
+                className="absolute inset-0 pointer-events-none"
+                disableOnMobile={shouldReduceMotion}
+              >
                 <div className="h-full flex flex-col items-center justify-center p-4 space-y-2 sm:space-y-3">
                   <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary/60" />
                   <p className="text-xs sm:text-sm text-center text-gray-400">
@@ -462,7 +510,12 @@ const TextAnalyzer: React.FC = () => {
               (selectedTab === 'text' && !inputText.trim()) || 
               (selectedTab === 'image' && !imageData) || 
               (selectedTab === 'link' && !mediaUrl.trim())}
-            className="relative inline-flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm shadow-lg hover:shadow-primary/20 transition-all overflow-hidden group"
+            className={cn(
+              "relative inline-flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg",
+              "bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm",
+              "transition-all overflow-hidden",
+              shouldReduceMotion ? "" : "shadow-lg hover:shadow-primary/20 group"
+            )}
             aria-label="Analyze content"
           >
             <span className="relative z-10 flex items-center">
@@ -478,9 +531,11 @@ const TextAnalyzer: React.FC = () => {
                 </>
               )}
             </span>
-            <span className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500">
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-shimmer"></div>
-            </span>
+            {!shouldReduceMotion && (
+              <span className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500">
+                <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent animate-shimmer"></div>
+              </span>
+            )}
           </Button>
         </div>
         
@@ -491,7 +546,7 @@ const TextAnalyzer: React.FC = () => {
           
           {useGemini && (
             <CardSpotlight 
-              borderGlow
+              borderGlow={!shouldReduceMotion}
               className="bg-gray-800/70 border-gray-700/50 shadow-lg"
               spotlightColor="rgba(138, 120, 245, 0.1)"
             >
@@ -504,7 +559,7 @@ const TextAnalyzer: React.FC = () => {
                 ) : geminiResponse ? (
                   <div className="prose prose-sm max-w-none prose-invert">
                     <div className="rounded-lg bg-gray-900/60 overflow-auto">
-                      <div className="p-4 sm:p-6">
+                      <div className="p-4 sm:p-6 space-y-4">
                         {formatGeminiResponse(geminiResponse).map((section) => {
                           if (section.type === 'heading1') {
                             return (
@@ -530,6 +585,38 @@ const TextAnalyzer: React.FC = () => {
                                     </li>
                                   ))}
                                 </ul>
+                              </div>
+                            );
+                          } else if (section.type === 'analysis-card') {
+                            return (
+                              <div key={section.id} className="bg-gray-800/50 rounded-lg p-3 sm:p-4 border-l-4 border-primary">
+                                <div className="flex flex-col space-y-2">
+                                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                    {section.confidence !== null && (
+                                      <div className="bg-gray-700/50 rounded-full px-3 py-1">
+                                        <span className="text-xs font-medium text-white">Confidence: {section.confidence}%</span>
+                                      </div>
+                                    )}
+                                    {section.severityScore !== null && (
+                                      <div className={cn(
+                                        "rounded-full px-3 py-1",
+                                        section.severityScore >= 8 ? "bg-red-500/20 text-red-300" :
+                                        section.severityScore >= 4 ? "bg-yellow-500/20 text-yellow-300" :
+                                        "bg-green-500/20 text-green-300"
+                                      )}>
+                                        <span className="text-xs font-medium">
+                                          Severity: {section.severityText} ({section.severityScore}/10)
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  <div className="text-xs sm:text-sm text-gray-300 mt-2">
+                                    {section.content.replace(/\*\*Confidence:\*\*.*\n/g, '')
+                                     .replace(/\*\*Severity:\*\*.*\n/g, '')
+                                     .replace(/\*\*(.*?):\*\*/g, '<span class="font-semibold text-white">$1:</span>')}
+                                  </div>
+                                </div>
                               </div>
                             );
                           } else {
@@ -571,6 +658,70 @@ const TextAnalyzer: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Learn More Dialog */}
+      <Dialog open={openInfoDialog} onOpenChange={setOpenInfoDialog}>
+        <DialogContent className="sm:max-w-md bg-gray-900 text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">About Content Analysis</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Understanding how our AI-powered content analysis works
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-2">
+            <div className="p-3 bg-gray-800 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Detection Categories</h4>
+              <ul className="space-y-1 text-sm text-gray-300">
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Hate Speech:</span> Content targeting groups based on protected characteristics</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Misinformation:</span> Factually incorrect claims that could lead to harm</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Cyberbullying:</span> Threats, harassment, or targeted abuse</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Explicit Content:</span> NSFW material not suitable for all audiences</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Prompt Injection:</span> Attempts to manipulate AI systems</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-gray-800 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Confidence & Severity</h4>
+              <p className="text-sm text-gray-300">Our analysis provides two key metrics:</p>
+              <ul className="space-y-1 text-sm text-gray-300 mt-2">
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Confidence Score:</span> How certain the system is about its classification (0-100%)</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Severity Rating:</span> The potential for harm (1-10 scale)</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-gray-800 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Context-Aware Detection</h4>
+              <p className="text-sm text-gray-300">Our system considers context when analyzing content. For example, the phrase "I'll find you" might be classified differently in a gaming chat versus a direct message.</p>
+            </div>
+
+            <div className="text-xs text-gray-400 mt-4">
+              This tool is for demonstration purposes. For production applications, always combine AI detection with human moderation.
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

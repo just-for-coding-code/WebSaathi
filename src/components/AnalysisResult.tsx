@@ -105,6 +105,12 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
       default: return 'Unknown Action';
     }
   };
+  
+  const getSeverityLabel = (score: number) => {
+    if (score >= 8) return 'High';
+    if (score >= 4) return 'Medium';
+    return 'Low';
+  };
 
   return (
     <AnimatedTransition show={!!result} type="scale" className="overflow-hidden">
@@ -133,7 +139,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
                 {getCategoryName()}
               </span>
               <span className="text-xs sm:text-sm text-gray-400">
-                • Severity: {result.severityScore}/10
+                • Severity: {getSeverityLabel(result.severityScore)} ({result.severityScore}/10)
               </span>
             </div>
           </div>
@@ -152,7 +158,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
             <div className="p-3 sm:p-4 rounded-lg bg-gray-900/60 border border-gray-700/50">
               <h4 className="text-xs sm:text-sm font-medium text-white flex items-center">
                 <FileBarChart className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 text-primary/70" />
-                Compliance Reference
+                Policy Reference
               </h4>
               <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-gray-300 leading-relaxed">{result.complianceCheck}</p>
             </div>
@@ -167,7 +173,17 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
               <div 
                 className={cn(
                   "absolute left-0 top-0 h-full rounded-full",
-                  result.category === 'safe' ? 'bg-harm-safe' : `bg-${getCategoryColor().split('-')[1]}`
+                  result.category === 'safe' 
+                    ? 'bg-harm-safe' 
+                    : result.category === 'hate_speech'
+                      ? 'bg-harm-hate'
+                      : result.category === 'misinformation'
+                        ? 'bg-harm-misinformation'
+                        : result.category === 'cyberbullying'
+                          ? 'bg-harm-cyberbullying'
+                          : result.category === 'explicit_content'
+                            ? 'bg-harm-explicit'
+                            : 'bg-harm-injection'
                 )}
                 style={{ width: `${result.confidence * 100}%` }}
                 role="progressbar" 
@@ -186,7 +202,7 @@ const AnalysisResult: React.FC<AnalysisResultProps> = ({
           <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-400 border-t border-gray-700/30 pt-3 sm:pt-4 flex items-start">
             <Info className="h-3.5 w-3.5 mt-0.5 mr-1.5 flex-shrink-0 text-gray-500" aria-hidden="true" />
             <p className="italic">
-              This analysis was performed using our advanced content safety AI. Results should be reviewed by a human for final determination.
+              This analysis was performed using our content safety AI. Analysis should be reviewed by a human moderator for final determination.
             </p>
           </div>
         </div>

@@ -26,18 +26,23 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
   const reducedMotion = prefersReducedMotion();
   const isMobile = useIsMobile();
   
-  // Skip animation for reduced motion preference or on mobile if disabled
+  // Skip animation based on reduced motion preference, mobile setting, or device performance
   const skipAnimation = reducedMotion || (disableOnMobile && isMobile);
   
-  // Optimize duration for mobile
-  const optimizedDuration = isMobile ? Math.min(duration, 200) : duration;
+  // Check if the device is low-end (fewer CPU cores) for additional performance optimization
+  const isLowEndDevice = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4;
+  
+  // Optimize duration based on device capabilities
+  const optimizedDuration = 
+    isLowEndDevice ? Math.min(duration, 150) :  // Much shorter duration for low-end devices
+    isMobile ? Math.min(duration, 200) :        // Shorter duration for mobile
+    duration;                                    // Full duration for desktop
 
   useEffect(() => {
     if (show) setShouldRender(true);
     
     let timeoutId: NodeJS.Timeout;
     if (!show) {
-      // Use shorter duration on mobile
       timeoutId = setTimeout(() => {
         setShouldRender(false);
       }, skipAnimation ? 0 : optimizedDuration);
@@ -69,13 +74,19 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
       animationClasses = show ? 'opacity-100' : 'opacity-0';
   }
 
+  // Optimize for performance on low-end devices by minimizing GPU usage
+  const transitionStyle = {
+    transitionProperty: isLowEndDevice ? 'opacity' : 'all',
+    transitionDuration: `${optimizedDuration}ms`,
+    transitionDelay: delay ? `${delay}ms` : undefined,
+    willChange: isLowEndDevice ? 'opacity' : 'opacity, transform',
+  };
+
   return (
     <div
-      className={`transition-all transform ${animationClasses} ${className}`}
-      style={{ 
-        transitionDuration: `${optimizedDuration}ms`,
-        transitionDelay: delay ? `${delay}ms` : undefined
-      }}
+      className={`transition transform ${animationClasses} ${className}`}
+      style={transitionStyle}
+      aria-hidden={!show}
     >
       {children}
     </div>

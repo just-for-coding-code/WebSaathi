@@ -24,44 +24,45 @@ export const analyzeWithGemini = async (
     
     const apiKey = apiKeyData.key;
     
-    // Construct a more detailed, professional prompt based on content type
+    // Construct a structured prompt that will generate a consistent output format
     let prompt = `Analyze the following content for potentially harmful elements including hate speech, misinformation, cyberbullying, explicit content, and prompt injection attempts.
 
 For each category you identify, please provide:
 1. Category name
 2. Confidence score (0-100%)
-3. Severity rating (Low, Medium, High)
-4. Detailed explanation with specific elements that triggered detection
-5. Reference to relevant content policies or regulations
-6. Recommended actions
+3. Severity rating (Low, Medium, High) followed by a numeric score (1-10)
+4. Elements identified with specific triggers
+5. Relevant policy reference
+6. Recommended action
 
-Use the following format for your analysis:
+Follow this EXACT format for EACH category you identify:
 
-## Category Name
-- **Confidence:** [percentage]
-- **Severity:** [Low/Medium/High]
+## [Category Name]
+- **Confidence:** [percentage]%
+- **Severity:** [Low/Medium/High] ([numeric score]/10)
 - **Elements Identified:**
-  - [Detailed explanation]
-- **Policy Reference:** [Relevant policy]
-- **Recommended Action:** [Action]
+  - [Concise description of problematic elements]
+  - [Specific language or content that triggered detection]
+- **Policy Reference:** [Specific policy violated]
+- **Recommended Action:** [Clear action to take]
 
-If the content appears safe, explain your reasoning using the same structured format.
+Use the severity scale consistently:
+- Low Severity (1-3): Minimal potential for harm
+- Medium Severity (4-7): Moderate concern requiring attention
+- High Severity (8-10): Serious violation requiring immediate action
 
-For scores and ratings:
-- **Low Severity:** 1-3
-- **Medium Severity:** 4-7
-- **High Severity:** 8-10
+If content appears safe, explain your reasoning with the same level of structure.
 
 `;
     
     if (contentType === 'text') {
-      prompt += `CONTENT FOR ANALYSIS (TEXT):\n"""${content}"""\n\nPlease provide a comprehensive, professional analysis focusing on specific language patterns and context.`;
+      prompt += `CONTENT FOR ANALYSIS (TEXT):\n"""${content}"""\n\nProvide a professional analysis with specific elements that triggered each rating.`;
     } else if (contentType === 'image') {
-      prompt += `CONTENT FOR ANALYSIS (IMAGE):\n[Image data not included in prompt]\n\nPlease provide a comprehensive, professional analysis focusing on visual elements, subjects, and context.`;
+      prompt += `CONTENT FOR ANALYSIS (IMAGE):\n[Image data not included in prompt]\n\nProvide a professional analysis of the image focusing on visual elements, subjects, and context.`;
     } else if (contentType === 'video') {
-      prompt += `CONTENT FOR ANALYSIS (VIDEO URL): ${content}\n\nPlease provide a comprehensive, professional analysis focusing on visual content, audio elements, and context.`;
+      prompt += `CONTENT FOR ANALYSIS (VIDEO URL): ${content}\n\nProvide a professional analysis of the video content, analyzing both visual and audio elements.`;
     } else if (contentType === 'audio') {
-      prompt += `CONTENT FOR ANALYSIS (AUDIO URL): ${content}\n\nPlease provide a comprehensive, professional analysis focusing on speech content, tone, and context.`;
+      prompt += `CONTENT FOR ANALYSIS (AUDIO URL): ${content}\n\nProvide a professional analysis of the audio content, focusing on speech, tone, and context.`;
     }
     
     console.info('Sending request to Gemini API with enhanced prompt...');
@@ -98,7 +99,7 @@ For scores and ratings:
           }
         ],
         generationConfig: {
-          temperature: 0.2, // Lower temperature for more precise and consistent output
+          temperature: 0.1, // Lower temperature for more precise and consistent output format
           topK: 40,
           topP: 0.95,
           maxOutputTokens: 1200, // Increased for more detailed analysis
@@ -132,10 +133,10 @@ For scores and ratings:
     
     const textContent = data.candidates[0].content.parts[0].text;
     
-    // Post-process the response for better formatting and consistency
+    // Post-process the response for better formatting and consistency 
     const processedContent = textContent
       .replace(/\n\n+/g, '\n\n') // Normalize multiple newlines
-      .replace(/\*\*Overall Assessment:\*\*/g, '## Analysis Summary') // Replace "Overall Assessment" with "Analysis Summary"
+      .replace(/\#\# Analysis Summary/g, '# Analysis Summary') // Standardize heading level
       .replace(/\*\*(\w+):\*\*/g, '**$1:**') // Ensure consistent spacing in bold sections
       .trim();
       
@@ -155,22 +156,23 @@ For scores and ratings:
       variant: "destructive"
     });
     
-    // Return a more professional and detailed fallback message
+    // Return a structured fallback message using the same format
     return `# Analysis Error
 
-We encountered an issue while analyzing your content. Our engineering team has been notified.
-
 ## Technical Details
-- **Error Type**: API Communication Error
-- **Status**: Failed
-- **Time**: ${new Date().toLocaleTimeString()}
+- **Confidence:** 100%
+- **Severity:** High (9/10)
+- **Elements Identified:**
+  - API communication failure detected
+  - Error message: ${error instanceof Error ? error.message : "Unknown error"}
+- **Recommended Action:** Please try again or use the built-in analyzer
 
 ## Possible Solutions
 - Verify your internet connection
 - Try again in a few moments
 - Use the built-in analyzer (disable "Use Gemini AI")
-- Ensure your content is in a supported format
+- Ensure content is in a supported format
 
-If this issue persists, please contact our support team with the error details above.`;
+If this issue persists, please contact support with the error details above.`;
   }
 };

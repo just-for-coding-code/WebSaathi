@@ -31,9 +31,9 @@ export const analyzeContent = (content: string): AnalysisResult => {
     return {
       category: 'hate_speech',
       severityScore: 8,
-      reason: 'Detected language potentially targeting groups',
+      reason: 'The content contains language potentially targeting specific groups. Pattern analysis detected hate-related terminology that violates platform community guidelines. Such content can create a harmful environment for users from marginalized communities.',
       action: 'block',
-      complianceCheck: 'Content Policy 2.1',
+      complianceCheck: 'Content Policy 2.1 - Prohibition of content that promotes discrimination, hatred, or violence against groups based on protected characteristics',
       confidence: 0.89
     };
   }
@@ -45,9 +45,9 @@ export const analyzeContent = (content: string): AnalysisResult => {
     return {
       category: 'misinformation',
       severityScore: 6,
-      reason: 'Potentially misleading claims detected',
+      reason: 'The content contains potentially misleading claims that could lead to harm. False information, particularly regarding health, safety, or civic processes can impact public welfare and decision-making. Further investigation is recommended.',
       action: 'warn',
-      complianceCheck: 'Fact Check Protocol',
+      complianceCheck: 'Fact-Check Protocol 3.4 - Content containing unverified claims requires warning labels and context',
       confidence: 0.76
     };
   }
@@ -59,9 +59,9 @@ export const analyzeContent = (content: string): AnalysisResult => {
     return {
       category: 'cyberbullying',
       severityScore: 7,
-      reason: 'Detected personally targeted negative language',
+      reason: 'The content contains personally targeted negative language that may constitute harassment or bullying. Derogatory terms directed at individuals can cause emotional harm and create an unsafe environment for communication.',
       action: 'block',
-      complianceCheck: 'Harassment Policy 3.2',
+      complianceCheck: 'Harassment Prevention Policy 3.2 - Protection against targeted abuse, insults, and intimidation',
       confidence: 0.82
     };
   }
@@ -73,9 +73,9 @@ export const analyzeContent = (content: string): AnalysisResult => {
     return {
       category: 'explicit_content',
       severityScore: 9,
-      reason: 'Explicit content markers detected',
+      reason: 'Explicit content markers detected in text. Content appears to reference or describe material not suitable for all audiences, particularly minors. This violates platform guidelines for appropriate content.',
       action: 'block',
-      complianceCheck: 'Content Safety 4.1',
+      complianceCheck: 'Content Safety Policy 4.1 - Standards for age-appropriate content and NSFW material',
       confidence: 0.95
     };
   }
@@ -87,9 +87,9 @@ export const analyzeContent = (content: string): AnalysisResult => {
     return {
       category: 'prompt_injection',
       severityScore: 10,
-      reason: 'Potential attempt to manipulate system behavior',
+      reason: 'The content contains language patterns consistent with attempts to manipulate, override, or bypass system safeguards. Such techniques pose security risks and may be used to generate harmful content by circumventing built-in protections.',
       action: 'escalate',
-      complianceCheck: 'Security Protocol 5.3',
+      complianceCheck: 'Security Protocol 5.3 - Prevention of instruction manipulation and system compromise',
       confidence: 0.97
     };
   }
@@ -98,7 +98,7 @@ export const analyzeContent = (content: string): AnalysisResult => {
   return {
     category: 'safe',
     severityScore: 0,
-    reason: 'No harmful content detected',
+    reason: 'Analysis complete. No harmful content patterns were detected in the provided text. The content appears to conform to platform guidelines and safety standards.',
     action: 'allow',
     confidence: 0.93
   };
@@ -109,42 +109,42 @@ export const getCategoryInfo = (category: HarmCategory) => {
     case 'hate_speech':
       return {
         title: 'Hate Speech',
-        description: 'Derogatory language targeting specific groups or individuals based on protected characteristics.',
+        description: 'Content targeting specific groups based on protected characteristics such as race, religion, gender, or sexual orientation.',
         color: 'harm-hate',
         icon: 'MessageSquareX'
       };
     case 'misinformation':
       return {
         title: 'Misinformation',
-        description: 'Factually incorrect claims that could lead to harm, such as medical myths or fake news.',
+        description: 'Factually incorrect claims that could lead to harmful outcomes, such as health misinformation or false civic information.',
         color: 'harm-misinformation',
         icon: 'AlertTriangle'
       };
     case 'cyberbullying':
       return {
         title: 'Cyberbullying',
-        description: 'Threats, harassment, or targeted abuse aimed at intimidating or harming individuals.',
+        description: 'Targeted harassment, threats, or abusive language aimed at intimidating or causing emotional harm to individuals.',
         color: 'harm-cyberbullying',
         icon: 'UserX'
       };
     case 'explicit_content':
       return {
         title: 'Explicit Content',
-        description: 'NSFW imagery, inappropriate material, or violent content not suitable for all audiences.',
+        description: 'Material not suitable for all audiences, including sexually explicit content, graphic violence, or other age-restricted content.',
         color: 'harm-explicit',
         icon: 'EyeOff'
       };
     case 'prompt_injection':
       return {
         title: 'Prompt Injection',
-        description: 'Malicious inputs designed to manipulate AI behavior or bypass safety measures.',
+        description: 'Attempts to manipulate AI systems by bypassing safety measures or inserting instructions to override intended behaviors.',
         color: 'harm-injection',
         icon: 'ShieldAlert'
       };
     case 'safe':
       return {
         title: 'Safe Content',
-        description: 'Content that appears to be free from harmful elements and safe for all audiences.',
+        description: 'Content that complies with platform policies and appears free from harmful elements.',
         color: 'harm-safe',
         icon: 'ShieldCheck'
       };
