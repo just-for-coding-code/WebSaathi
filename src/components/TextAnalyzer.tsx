@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   Send, AlertTriangle, Info, Upload, FileText, Image, Video, Music, Link as LinkIcon, 
@@ -40,9 +39,7 @@ const TextAnalyzer: React.FC = () => {
   const isMobile = useIsMobile();
   const [shouldReduceMotion, setShouldReduceMotion] = useState(false);
 
-  // Check for reduced motion preference
   useEffect(() => {
-    // Check if device is low-end or prefers reduced motion
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isLowEndDevice = navigator.hardwareConcurrency <= 4;
     
@@ -83,7 +80,6 @@ const TextAnalyzer: React.FC = () => {
         const response = await analyzeWithGemini(contentToAnalyze, contentType);
         setGeminiResponse(response);
         
-        // Auto-scroll to results on mobile
         if (isMobile && resultSectionRef.current) {
           setTimeout(() => {
             resultSectionRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? 'auto' : 'smooth' });
@@ -105,7 +101,6 @@ const TextAnalyzer: React.FC = () => {
         setResult(analysisResult);
         setIsAnalyzing(false);
         
-        // Auto-scroll to results on mobile
         if (isMobile && resultSectionRef.current) {
           setTimeout(() => {
             resultSectionRef.current?.scrollIntoView({ behavior: shouldReduceMotion ? 'auto' : 'smooth' });
@@ -119,8 +114,7 @@ const TextAnalyzer: React.FC = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Add file size validation
-    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+    if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
         description: "Please upload an image smaller than 5MB",
@@ -166,58 +160,47 @@ const TextAnalyzer: React.FC = () => {
     }
   };
 
-  // Function to format Gemini response for better readability
   const formatGeminiResponse = (response: string) => {
     if (!response) return [];
     
-    // Split by double newlines to separate sections
-    return response.split('\n\n').map((paragraph, idx) => {
-      // Check for headers
-      if (paragraph.startsWith('# ')) {
+    const titleRegex = /Content Analysis: "(.+?)"/;
+    const titleMatch = response.match(titleRegex);
+    
+    const sectionHeaderRegex = /^(Overall Assessment|Safety Analysis)$/gm;
+    
+    const categoryRegex = /- Category: ([A-Za-z\s]+)/g;
+    const confidenceRegex = /- Confidence: (\d+)%/g;
+    const severityRegex = /- Severity: ([A-Za-z]+) \((\d+)\/10\)/g;
+    
+    const sections = response.split('\n\n').map((paragraph, idx) => {
+      if (titleMatch && idx === 0) {
         return {
-          type: 'heading1',
-          content: paragraph.replace('# ', ''),
-          id: `h1-${idx}`
+          type: 'title',
+          content: paragraph,
+          contentPreview: titleMatch[1] || 'Analysis',
+          id: `title-${idx}`
         };
-      } 
-      else if (paragraph.startsWith('## ')) {
+      } else if (paragraph.match(sectionHeaderRegex)) {
         return {
-          type: 'heading2',
-          content: paragraph.replace('## ', ''),
-          id: `h2-${idx}`
+          type: 'section-header',
+          content: paragraph,
+          id: `section-${idx}`
         };
-      }
-      // Check for bullet points
-      else if (paragraph.includes('\n- ')) {
-        const [listTitle, ...listItems] = paragraph.split('\n- ');
-        return {
-          type: 'list',
-          title: listTitle.trim(),
-          items: listItems.map(item => item.trim()),
-          id: `list-${idx}`
-        };
-      }
-      // Check for structured format with confidence and severity
-      else if (paragraph.includes('**Confidence:**') && paragraph.includes('**Severity:**')) {
-        const content = paragraph;
-        const confidenceMatch = content.match(/\*\*Confidence:\*\*\s*(\d+)%/);
-        const severityMatch = content.match(/\*\*Severity:\*\*\s*(\w+)\s*\((\d+)\)/);
-        
-        const confidence = confidenceMatch ? parseInt(confidenceMatch[1]) : null;
-        const severityText = severityMatch ? severityMatch[1] : null;
-        const severityScore = severityMatch ? parseInt(severityMatch[2]) : null;
+      } else if (paragraph.includes('- Category:')) {
+        const categoryMatch = [...paragraph.matchAll(categoryRegex)];
+        const confidenceMatch = [...paragraph.matchAll(confidenceRegex)];
+        const severityMatch = [...paragraph.matchAll(severityRegex)];
         
         return {
-          type: 'analysis-card',
-          content: content,
-          confidence: confidence,
-          severityText: severityText,
-          severityScore: severityScore,
-          id: `analysis-${idx}`
+          type: 'category-info',
+          content: paragraph,
+          category: categoryMatch.length > 0 ? categoryMatch[0][1] : null,
+          confidence: confidenceMatch.length > 0 ? parseInt(confidenceMatch[0][1]) : null,
+          severityText: severityMatch.length > 0 ? severityMatch[0][1] : null,
+          severityScore: severityMatch.length > 0 ? parseInt(severityMatch[0][2]) : null,
+          id: `category-${idx}`
         };
-      }
-      // Regular paragraph
-      else {
+      } else {
         return {
           type: 'paragraph',
           content: paragraph.trim(),
@@ -225,13 +208,15 @@ const TextAnalyzer: React.FC = () => {
         };
       }
     });
+    
+    return sections;
   };
 
   return (
     <div className="w-full max-w-3xl mx-auto relative">
-      <div className="mb-6 sm:mb-8 space-y-2">
+      <div className="mb-5 sm:mb-6 space-y-2">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-white" id="content-analysis-heading">
+          <h2 className="text-xl font-bold text-white" id="content-analysis-heading">
             Content Analysis
           </h2>
           <Button 
@@ -245,13 +230,13 @@ const TextAnalyzer: React.FC = () => {
             Learn More
           </Button>
         </div>
-        <p className="text-sm sm:text-base text-gray-300">
-          Analyze content for potentially harmful elements using advanced AI technology
+        <p className="text-sm text-gray-300">
+          Analyze content for potentially harmful elements using advanced AI
         </p>
       </div>
       
-      <div className="space-y-6 sm:space-y-8">
-        <div className="flex items-center space-x-3 justify-end mb-2 sm:mb-4 bg-gray-800/50 p-2 sm:p-3 rounded-lg border border-gray-700/30">
+      <div className="space-y-5 sm:space-y-6">
+        <div className="flex items-center space-x-3 justify-end mb-2 sm:mb-3 bg-gray-800/50 p-2 rounded-lg border border-gray-700/30">
           <Label htmlFor="gemini-toggle" className="text-xs sm:text-sm text-gray-300 font-medium">
             Use Gemini AI
           </Label>
@@ -272,34 +257,34 @@ const TextAnalyzer: React.FC = () => {
           }}
           aria-label="Content type selection"
         >
-          <TabsList className="grid grid-cols-3 mb-4 sm:mb-6 bg-gray-800/70 border border-gray-700/30 p-1 rounded-lg">
+          <TabsList className="grid grid-cols-3 mb-4 bg-gray-800/70 border border-gray-700/30 p-1 rounded-lg">
             <TabsTrigger 
               value="text" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 sm:py-2 text-xs sm:text-sm"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 text-xs"
               aria-label="Analyze text content"
             >
-              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <FileText className="h-3.5 w-3.5 mr-1" />
               Text
             </TabsTrigger>
             <TabsTrigger 
               value="image" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 sm:py-2 text-xs sm:text-sm"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 text-xs"
               aria-label="Analyze image content"
             >
-              <Image className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <Image className="h-3.5 w-3.5 mr-1" />
               Image
             </TabsTrigger>
             <TabsTrigger 
               value="link" 
-              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 sm:py-2 text-xs sm:text-sm"
+              className="data-[state=active]:bg-primary data-[state=active]:text-white rounded-md py-1.5 text-xs"
               aria-label="Analyze media URL"
             >
-              <LinkIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              <LinkIcon className="h-3.5 w-3.5 mr-1" />
               Media URL
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="text" className="space-y-3 sm:space-y-4">
+          <TabsContent value="text" className="space-y-3">
             <div className="relative">
               <Textarea
                 value={inputText}
@@ -308,7 +293,7 @@ const TextAnalyzer: React.FC = () => {
                   if (e.target.value) setShowHint(false);
                 }}
                 placeholder="Enter text to analyze..."
-                className="w-full min-h-32 sm:min-h-40 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 resize-none text-white text-sm"
+                className="w-full min-h-28 px-3 py-2 rounded-xl border border-gray-700 focus:border-primary bg-gray-800/80 placeholder:text-gray-500 transition-all duration-200 resize-none text-white text-sm"
                 disabled={isAnalyzing}
                 aria-label="Text content to analyze"
               />
@@ -319,23 +304,23 @@ const TextAnalyzer: React.FC = () => {
                 className="absolute inset-0 pointer-events-none"
                 disableOnMobile={shouldReduceMotion}
               >
-                <div className="h-full flex flex-col items-center justify-center p-4 space-y-2 sm:space-y-3">
-                  <Info className="h-4 w-4 sm:h-5 sm:w-5 text-primary/60" />
-                  <p className="text-xs sm:text-sm text-center text-gray-400">
+                <div className="h-full flex flex-col items-center justify-center p-4 space-y-2">
+                  <Info className="h-4 w-4 text-primary/60" />
+                  <p className="text-xs text-center text-gray-400">
                     Enter text that you want to analyze for harmful content
                   </p>
                 </div>
               </AnimatedTransition>
             </div>
             
-            <div className="space-y-2 sm:space-y-3">
-              <h3 className="text-xs sm:text-sm font-medium text-gray-300">Example prompts:</h3>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2">
+            <div className="space-y-2">
+              <h3 className="text-xs font-medium text-gray-300">Example prompts:</h3>
+              <div className="flex flex-wrap gap-1.5">
                 {examplePrompts.map((prompt, index) => (
                   <button
                     key={index}
                     onClick={() => handleExampleClick(prompt)}
-                    className="text-2xs sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                    className="text-2xs px-2 py-1 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                     aria-label={`Use example: ${prompt.substring(0, 30)}${prompt.length > 30 ? '...' : ''}`}
                   >
                     {prompt.length > 30 ? prompt.substring(0, 30) + '...' : prompt}
@@ -345,7 +330,7 @@ const TextAnalyzer: React.FC = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="image" className="space-y-4 sm:space-y-6">
+          <TabsContent value="image" className="space-y-4">
             <div 
               className={cn(
                 "flex flex-col items-center justify-center p-6 sm:p-10 border-2 border-dashed border-gray-700 rounded-xl",
@@ -414,9 +399,9 @@ const TextAnalyzer: React.FC = () => {
             </div>
           </TabsContent>
           
-          <TabsContent value="link" className="space-y-3 sm:space-y-4">
-            <div className="space-y-3 sm:space-y-4">
-              <div className="flex flex-col space-y-1.5 sm:space-y-2">
+          <TabsContent value="link" className="space-y-3">
+            <div className="space-y-3">
+              <div className="flex flex-col space-y-1.5">
                 <Label htmlFor="media-url" className="text-xs sm:text-sm text-gray-300 font-medium">
                   Enter URL to analyze
                 </Label>
@@ -431,24 +416,24 @@ const TextAnalyzer: React.FC = () => {
                 />
               </div>
               
-              <div className="flex flex-col space-y-1.5 sm:space-y-2">
+              <div className="flex flex-col space-y-1.5">
                 <Label className="text-xs sm:text-sm text-gray-300 font-medium">
                   Content type
                 </Label>
-                <div className="flex space-x-1.5 sm:space-x-2">
+                <div className="flex space-x-1.5">
                   <Button
                     type="button"
                     variant={mediaType === 'image' ? 'default' : 'outline'}
                     onClick={() => setMediaType('image')}
                     className={cn(
-                      "flex-1 text-xs sm:text-sm py-1.5 h-auto",
+                      "flex-1 text-xs py-1.5 h-auto",
                       mediaType === 'image' 
                         ? "bg-primary" 
                         : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
                     )}
                     aria-pressed={mediaType === 'image'}
                   >
-                    <Image className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
+                    <Image className="h-3.5 w-3.5 mr-1 sm:mr-2" aria-hidden="true" />
                     Image
                   </Button>
                   <Button
@@ -456,14 +441,14 @@ const TextAnalyzer: React.FC = () => {
                     variant={mediaType === 'video' ? 'default' : 'outline'}
                     onClick={() => setMediaType('video')}
                     className={cn(
-                      "flex-1 text-xs sm:text-sm py-1.5 h-auto",
+                      "flex-1 text-xs py-1.5 h-auto",
                       mediaType === 'video' 
                         ? "bg-primary" 
                         : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
                     )}
                     aria-pressed={mediaType === 'video'}
                   >
-                    <Video className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
+                    <Video className="h-3.5 w-3.5 mr-1 sm:mr-2" aria-hidden="true" />
                     Video
                   </Button>
                   <Button
@@ -471,27 +456,27 @@ const TextAnalyzer: React.FC = () => {
                     variant={mediaType === 'audio' ? 'default' : 'outline'}
                     onClick={() => setMediaType('audio')}
                     className={cn(
-                      "flex-1 text-xs sm:text-sm py-1.5 h-auto",
+                      "flex-1 text-xs py-1.5 h-auto",
                       mediaType === 'audio' 
                         ? "bg-primary" 
                         : "bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white"
                     )}
                     aria-pressed={mediaType === 'audio'}
                   >
-                    <Music className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" aria-hidden="true" />
+                    <Music className="h-3.5 w-3.5 mr-1 sm:mr-2" aria-hidden="true" />
                     Audio
                   </Button>
                 </div>
               </div>
               
-              <div className="space-y-2 sm:space-y-3">
-                <h3 className="text-xs sm:text-sm font-medium text-gray-300">Example URLs:</h3>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              <div className="space-y-2">
+                <h3 className="text-xs font-medium text-gray-300">Example URLs:</h3>
+                <div className="flex flex-wrap gap-1.5">
                   {exampleUrls.map((url, index) => (
                     <button
                       key={index}
                       onClick={() => handleExampleClick(url)}
-                      className="text-2xs sm:text-xs px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+                      className="text-2xs px-2 py-1 rounded-full bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                       aria-label={`Use example URL: ${url.substring(0, 30)}${url.length > 30 ? '...' : ''}`}
                     >
                       {url.length > 30 ? url.substring(0, 30) + '...' : url}
@@ -511,8 +496,8 @@ const TextAnalyzer: React.FC = () => {
               (selectedTab === 'image' && !imageData) || 
               (selectedTab === 'link' && !mediaUrl.trim())}
             className={cn(
-              "relative inline-flex items-center space-x-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg",
-              "bg-primary hover:bg-primary/90 text-white font-medium text-xs sm:text-sm",
+              "relative inline-flex items-center space-x-2 px-4 py-2 rounded-lg",
+              "bg-primary hover:bg-primary/90 text-white font-medium text-xs",
               "transition-all overflow-hidden",
               shouldReduceMotion ? "" : "shadow-lg hover:shadow-primary/20 group"
             )}
@@ -521,13 +506,13 @@ const TextAnalyzer: React.FC = () => {
             <span className="relative z-10 flex items-center">
               {isAnalyzing ? (
                 <>
-                  <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin mr-1.5 sm:mr-2" aria-hidden="true" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" aria-hidden="true" />
                   <span>Analyzing...</span>
                 </>
               ) : (
                 <>
                   <span>Analyze Content</span>
-                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 ml-1.5 sm:ml-2" aria-hidden="true" />
+                  <ArrowRight className="h-3.5 w-3.5 ml-1.5" aria-hidden="true" />
                 </>
               )}
             </span>
@@ -540,7 +525,7 @@ const TextAnalyzer: React.FC = () => {
         </div>
         
         <div className="relative min-h-[200px]" ref={resultSectionRef} aria-live="polite">
-          <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6" id="analysis-results-heading">Analysis Results</h3>
+          <h3 className="text-lg font-bold text-white mb-4" id="analysis-results-heading">Analysis Results</h3>
           
           {!useGemini && <AnalysisResult result={result} isAnalyzing={isAnalyzing} />}
           
@@ -550,78 +535,75 @@ const TextAnalyzer: React.FC = () => {
               className="bg-gray-800/70 border-gray-700/50 shadow-lg"
               spotlightColor="rgba(138, 120, 245, 0.1)"
             >
-              <CardContent className="p-4 sm:p-6">
+              <CardContent className="p-4">
                 {isAnalyzing ? (
-                  <div className="flex flex-col items-center justify-center py-8 sm:py-10 space-y-3 sm:space-y-4">
-                    <div className="w-10 h-10 sm:w-12 sm:h-12 border-3 sm:border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-                    <p className="text-sm sm:text-base text-gray-300">Analyzing with Gemini AI...</p>
+                  <div className="flex flex-col items-center justify-center py-8 space-y-3">
+                    <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-sm text-gray-300">Analyzing with Gemini AI...</p>
                   </div>
                 ) : geminiResponse ? (
                   <div className="prose prose-sm max-w-none prose-invert">
                     <div className="rounded-lg bg-gray-900/60 overflow-auto">
-                      <div className="p-4 sm:p-6 space-y-4">
+                      <div className="p-4 space-y-3">
                         {formatGeminiResponse(geminiResponse).map((section) => {
-                          if (section.type === 'heading1') {
+                          if (section.type === 'title') {
                             return (
-                              <h3 key={section.id} className="text-lg sm:text-xl font-bold text-white mt-3 sm:mt-4 mb-2 sm:mb-3 border-b border-gray-700 pb-2">
-                                {section.content}
-                              </h3>
+                              <div key={section.id} className="mb-3 border-b border-gray-700 pb-2">
+                                <h3 className="text-lg font-bold text-white">
+                                  Content Analysis: <span className="text-primary">"{section.contentPreview}"</span>
+                                </h3>
+                                <p className="text-sm text-gray-300 mt-1">
+                                  {section.content.split('\n').slice(1).join(' ')}
+                                </p>
+                              </div>
                             );
-                          } else if (section.type === 'heading2') {
+                          } else if (section.type === 'section-header') {
                             return (
-                              <h4 key={section.id} className="text-base sm:text-lg font-semibold text-primary/90 mt-2 sm:mt-3 mb-1.5 sm:mb-2">
+                              <h4 key={section.id} className="text-base font-semibold text-primary/90 mt-4">
                                 {section.content}
                               </h4>
                             );
-                          } else if (section.type === 'list') {
+                          } else if (section.type === 'category-info') {
                             return (
-                              <div key={section.id} className="my-2 sm:my-3 bg-gray-800/50 rounded-lg p-3 sm:p-4">
-                                {section.title && <p className="font-medium text-sm sm:text-base text-gray-200 mb-1.5 sm:mb-2">{section.title}</p>}
-                                <ul className="space-y-1">
-                                  {section.items.map((item, i) => (
-                                    <li key={`${section.id}-item-${i}`} className="flex items-start">
-                                      <span className="inline-flex mr-1.5 sm:mr-2 mt-1 text-primary">•</span>
-                                      <span className="text-xs sm:text-sm text-gray-300">{item}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            );
-                          } else if (section.type === 'analysis-card') {
-                            return (
-                              <div key={section.id} className="bg-gray-800/50 rounded-lg p-3 sm:p-4 border-l-4 border-primary">
-                                <div className="flex flex-col space-y-2">
-                                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                                    {section.confidence !== null && (
-                                      <div className="bg-gray-700/50 rounded-full px-3 py-1">
-                                        <span className="text-xs font-medium text-white">Confidence: {section.confidence}%</span>
-                                      </div>
-                                    )}
-                                    {section.severityScore !== null && (
-                                      <div className={cn(
-                                        "rounded-full px-3 py-1",
-                                        section.severityScore >= 8 ? "bg-red-500/20 text-red-300" :
-                                        section.severityScore >= 4 ? "bg-yellow-500/20 text-yellow-300" :
-                                        "bg-green-500/20 text-green-300"
-                                      )}>
-                                        <span className="text-xs font-medium">
-                                          Severity: {section.severityText} ({section.severityScore}/10)
-                                        </span>
-                                      </div>
-                                    )}
-                                  </div>
-                                  
-                                  <div className="text-xs sm:text-sm text-gray-300 mt-2">
-                                    {section.content.replace(/\*\*Confidence:\*\*.*\n/g, '')
-                                     .replace(/\*\*Severity:\*\*.*\n/g, '')
-                                     .replace(/\*\*(.*?):\*\*/g, '<span class="font-semibold text-white">$1:</span>')}
-                                  </div>
+                              <div key={section.id} className="bg-gray-800/60 rounded-lg p-3 border-l-3 border-primary my-3">
+                                <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                                  {section.category && (
+                                    <div className="bg-primary/20 rounded-full px-2 py-0.5">
+                                      <span className="text-xs font-medium text-white">{section.category}</span>
+                                    </div>
+                                  )}
+                                  {section.confidence !== null && (
+                                    <div className="bg-gray-700/50 rounded-full px-2 py-0.5">
+                                      <span className="text-xs font-medium text-white">Confidence: {section.confidence}%</span>
+                                    </div>
+                                  )}
+                                  {section.severityScore !== null && (
+                                    <div className={cn(
+                                      "rounded-full px-2 py-0.5",
+                                      section.severityScore >= 8 ? "bg-red-500/20 text-red-300" :
+                                      section.severityScore >= 4 ? "bg-yellow-500/20 text-yellow-300" :
+                                      "bg-green-500/20 text-green-300"
+                                    )}>
+                                      <span className="text-xs font-medium">
+                                        {section.severityText} ({section.severityScore}/10)
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="text-xs text-gray-300">
+                                  {section.content
+                                    .replace(/- Category:.*\n?/g, '')
+                                    .replace(/- Confidence:.*\n?/g, '')
+                                    .replace(/- Severity:.*\n?/g, '')
+                                    .replace(/- /g, '• ')
+                                    .trim()}
                                 </div>
                               </div>
                             );
                           } else {
                             return (
-                              <p key={section.id} className="mb-2 sm:mb-3 text-xs sm:text-sm text-gray-300 leading-relaxed">
+                              <p key={section.id} className="text-xs text-gray-300 leading-relaxed">
                                 {section.content}
                               </p>
                             );
@@ -631,10 +613,10 @@ const TextAnalyzer: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center space-y-1.5 sm:space-y-2 py-8 sm:py-10">
-                    <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-gray-600 mx-auto" aria-hidden="true" />
-                    <p className="text-base sm:text-lg text-gray-400">No analysis results yet</p>
-                    <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
+                  <div className="text-center space-y-1.5 py-8">
+                    <AlertTriangle className="h-10 w-10 text-gray-600 mx-auto" aria-hidden="true" />
+                    <p className="text-base text-gray-400">No analysis results yet</p>
+                    <p className="text-xs text-gray-500 max-w-md mx-auto">
                       Select your content type, enter or upload your content, and click "Analyze Content" to begin
                     </p>
                   </div>
@@ -645,11 +627,11 @@ const TextAnalyzer: React.FC = () => {
           
           {!isAnalyzing && !result && !geminiResponse && (
             <Card className="bg-gray-800/70 border-gray-700/50">
-              <CardContent className="p-4 sm:p-6 flex items-center justify-center">
-                <div className="text-center space-y-1.5 sm:space-y-2 py-8 sm:py-10">
-                  <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-gray-600 mx-auto" aria-hidden="true" />
-                  <p className="text-base sm:text-lg text-gray-400">No analysis results yet</p>
-                  <p className="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
+              <CardContent className="p-4 flex items-center justify-center">
+                <div className="text-center space-y-1.5 py-8">
+                  <AlertTriangle className="h-10 w-10 text-gray-600 mx-auto" aria-hidden="true" />
+                  <p className="text-base text-gray-400">No analysis results yet</p>
+                  <p className="text-xs text-gray-500 max-w-md mx-auto">
                     Select your content type, enter or upload your content, and click "Analyze Content" to begin
                   </p>
                 </div>
@@ -659,7 +641,6 @@ const TextAnalyzer: React.FC = () => {
         </div>
       </div>
 
-      {/* Learn More Dialog */}
       <Dialog open={openInfoDialog} onOpenChange={setOpenInfoDialog}>
         <DialogContent className="sm:max-w-md bg-gray-900 text-white border-gray-700">
           <DialogHeader>

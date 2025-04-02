@@ -24,35 +24,28 @@ export const analyzeWithGemini = async (
     
     const apiKey = apiKeyData.key;
     
-    // Construct a structured prompt that will generate a consistent output format
-    let prompt = `Analyze the following content for potentially harmful elements including hate speech, misinformation, cyberbullying, explicit content, and prompt injection attempts.
+    // Construct a more structured prompt for concise, professional output
+    let prompt = `Analyze the following content for potentially harmful elements and provide a structured, professional assessment.
 
-For each category you identify, please provide:
-1. Category name
-2. Confidence score (0-100%)
-3. Severity rating (Low, Medium, High) followed by a numeric score (1-10)
-4. Elements identified with specific triggers
-5. Relevant policy reference
-6. Recommended action
+FORMAT YOUR RESPONSE EXACTLY AS FOLLOWS:
 
-Follow this EXACT format for EACH category you identify:
+Content Analysis: "[content preview]"
+[1-2 sentence summary of what's being analyzed]
 
-## [Category Name]
-- **Confidence:** [percentage]%
-- **Severity:** [Low/Medium/High] ([numeric score]/10)
-- **Elements Identified:**
-  - [Concise description of problematic elements]
-  - [Specific language or content that triggered detection]
-- **Policy Reference:** [Specific policy violated]
-- **Recommended Action:** [Clear action to take]
+Overall Assessment
+[1-3 sentences giving the primary conclusion about whether this content is harmful or safe]
 
-Use the severity scale consistently:
-- Low Severity (1-3): Minimal potential for harm
-- Medium Severity (4-7): Moderate concern requiring attention
-- High Severity (8-10): Serious violation requiring immediate action
+Safety Analysis
+[If harmful, provide ONLY the categories detected as harmful with these details:
+- Category: [Name]
+- Confidence: [percentage]
+- Severity: [Low/Medium/High] ([score]/10)
+- Key Elements: [Very brief description of what triggered this category]
+- Recommended Action: [Allow/Warn/Block]
 
-If content appears safe, explain your reasoning with the same level of structure.
+If safe, provide a single concise paragraph explaining why it's considered safe]
 
+BE EXTREMELY CONCISE. Focus on brevity and professional analysis. Avoid repetition.
 `;
     
     if (contentType === 'text') {
@@ -65,9 +58,9 @@ If content appears safe, explain your reasoning with the same level of structure
       prompt += `CONTENT FOR ANALYSIS (AUDIO URL): ${content}\n\nProvide a professional analysis of the audio content, focusing on speech, tone, and context.`;
     }
     
-    console.info('Sending request to Gemini API with enhanced prompt...');
+    console.info('Sending request to Gemini API with structured prompt...');
     
-    // Updated API endpoint to use Gemini 2.0 Flash model for better analysis
+    // Use Gemini 2.0 Flash model for better analysis
     const response = await fetch('https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent', {
       method: 'POST',
       headers: {
@@ -102,7 +95,7 @@ If content appears safe, explain your reasoning with the same level of structure
           temperature: 0.1, // Lower temperature for more precise and consistent output format
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 1200, // Increased for more detailed analysis
+          maxOutputTokens: 800, // Reduced for more concise output
         }
       }),
     });
@@ -136,8 +129,7 @@ If content appears safe, explain your reasoning with the same level of structure
     // Post-process the response for better formatting and consistency 
     const processedContent = textContent
       .replace(/\n\n+/g, '\n\n') // Normalize multiple newlines
-      .replace(/\#\# Analysis Summary/g, '# Analysis Summary') // Standardize heading level
-      .replace(/\*\*(\w+):\*\*/g, '**$1:**') // Ensure consistent spacing in bold sections
+      .replace(/\#\# (\w+)/g, '## $1') // Standardize heading level
       .trim();
       
     return processedContent;
@@ -157,22 +149,18 @@ If content appears safe, explain your reasoning with the same level of structure
     });
     
     // Return a structured fallback message using the same format
-    return `# Analysis Error
+    return `Content Analysis: "Error"
 
-## Technical Details
-- **Confidence:** 100%
-- **Severity:** High (9/10)
-- **Elements Identified:**
-  - API communication failure detected
-  - Error message: ${error instanceof Error ? error.message : "Unknown error"}
-- **Recommended Action:** Please try again or use the built-in analyzer
+Overall Assessment
+The system encountered a technical error while analyzing the content.
 
-## Possible Solutions
-- Verify your internet connection
-- Try again in a few moments
-- Use the built-in analyzer (disable "Use Gemini AI")
-- Ensure content is in a supported format
+Safety Analysis
+- Category: Technical Error
+- Confidence: 100%
+- Severity: Medium (5/10)
+- Key Elements: API communication failure - ${error instanceof Error ? error.message : "Unknown error"}
+- Recommended Action: Try again or use built-in analyzer
 
-If this issue persists, please contact support with the error details above.`;
+Please try again in a few moments or disable "Use Gemini AI" to use the built-in analyzer.`;
   }
 };

@@ -1,5 +1,4 @@
-
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Shield, Info, AlertTriangle, MessageSquareX, UserX, EyeOff, ShieldAlert, ShieldCheck, ExternalLink } from 'lucide-react';
 import Layout from '../components/Layout';
 import TextAnalyzer from '../components/TextAnalyzer';
@@ -12,6 +11,7 @@ import { HarmCategory } from '../utils/analyzeContent';
 import BackgroundBeams from '@/components/BackgroundBeams';
 import GlowingButton from '@/components/GlowingButton';
 import CardSpotlight from '@/components/CardSpotlight';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const Index = () => {
   const featuresRef = useRef<HTMLElement>(null);
@@ -19,6 +19,7 @@ const Index = () => {
   const aboutRef = useRef<HTMLElement>(null);
   const extensionRef = useRef<HTMLElement>(null);
   const mousePosRef = useRef({ x: 0, y: 0 });
+  const [openExtensionDialog, setOpenExtensionDialog] = useState(false);
 
   useEffect(() => {
     // Track mouse position for spotlight effects
@@ -229,8 +230,12 @@ const Index = () => {
                   <ExternalLink className="h-4 w-4 ml-2" />
                 </MovingBorderButton>
                 
-                <ShadcnButton variant="outline" className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2">
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                <ShadcnButton 
+                  variant="outline" 
+                  className="border-gray-700 text-gray-300 hover:bg-gray-800 flex items-center gap-2"
+                  onClick={() => setOpenExtensionDialog(true)}
+                >
+                  <Info className="h-4 w-4" />
                   Learn More
                 </ShadcnButton>
               </div>
@@ -379,6 +384,69 @@ const Index = () => {
           </CardSpotlight>
         </div>
       </section>
+
+      {/* Extension Learn More Dialog */}
+      <Dialog open={openExtensionDialog} onOpenChange={setOpenExtensionDialog}>
+        <DialogContent className="sm:max-w-md bg-gray-900 text-white border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-xl text-white">WebSaathi Content Moderator</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Real-time content moderation for safer browsing
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 mt-2">
+            <div className="p-3 bg-gray-800 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">How It Works</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Automatic Scanning:</span> Analyzes web pages as you browse</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">AI Analysis:</span> Uses Gemini API for text and Sightengine for images</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Content Blocking:</span> Option to hide harmful content with warning message</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Continuous Monitoring:</span> Scans new content as you scroll</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-gray-800 rounded-lg">
+              <h4 className="font-medium text-primary mb-2">Key Features</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Safety Levels:</span> Low/Medium/High protection settings</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Content Filtering:</span> Choose which harmful content types to detect</span>
+                </li>
+                <li className="flex items-start">
+                  <span className="inline-flex mr-2 mt-1 text-primary">•</span>
+                  <span><span className="font-medium text-white">Visual Indicator:</span> Shield badge shows protection status</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div className="flex justify-end mt-2">
+              <ShadcnButton 
+                className="bg-primary hover:bg-primary/90 text-white"
+              >
+                Install Extension
+                <ExternalLink className="h-4 w-4 ml-1.5" />
+              </ShadcnButton>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };

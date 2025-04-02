@@ -26,16 +26,20 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
   const reducedMotion = prefersReducedMotion();
   const isMobile = useIsMobile();
   
-  // Skip animation based on reduced motion preference, mobile setting, or device performance
+  // Determine if animations should be disabled
   const skipAnimation = reducedMotion || (disableOnMobile && isMobile);
   
-  // Check if the device is low-end (fewer CPU cores) for additional performance optimization
-  const isLowEndDevice = typeof navigator !== 'undefined' && navigator.hardwareConcurrency <= 4;
+  // Enhanced performance detection for improved mobile experience
+  const isLowPerformanceDevice = typeof navigator !== 'undefined' && (
+    navigator.hardwareConcurrency <= 4 || 
+    navigator.deviceMemory <= 4 || 
+    /Android [456]/.test(navigator.userAgent)
+  );
   
   // Optimize duration based on device capabilities
   const optimizedDuration = 
-    isLowEndDevice ? Math.min(duration, 150) :  // Much shorter duration for low-end devices
-    isMobile ? Math.min(duration, 200) :        // Shorter duration for mobile
+    isLowPerformanceDevice ? Math.min(duration, 120) :  // Very short duration for low-end devices
+    isMobile ? Math.min(duration, 180) :        // Shorter duration for mobile
     duration;                                    // Full duration for desktop
 
   useEffect(() => {
@@ -74,12 +78,13 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
       animationClasses = show ? 'opacity-100' : 'opacity-0';
   }
 
-  // Optimize for performance on low-end devices by minimizing GPU usage
+  // Optimize for performance by minimizing GPU usage on low-end devices
   const transitionStyle = {
-    transitionProperty: isLowEndDevice ? 'opacity' : 'all',
+    transitionProperty: isLowPerformanceDevice ? 'opacity' : 'all',
     transitionDuration: `${optimizedDuration}ms`,
     transitionDelay: delay ? `${delay}ms` : undefined,
-    willChange: isLowEndDevice ? 'opacity' : 'opacity, transform',
+    willChange: isLowPerformanceDevice ? 'opacity' : 'opacity, transform',
+    contain: 'content',  // Improve rendering performance
   };
 
   return (
