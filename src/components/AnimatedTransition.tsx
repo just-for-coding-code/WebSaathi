@@ -1,5 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
+import { prefersReducedMotion } from '@/utils/animationUtils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AnimatedTransitionProps {
   show: boolean;
@@ -8,6 +10,7 @@ interface AnimatedTransitionProps {
   type?: 'fade' | 'scale' | 'slide';
   duration?: number;
   delay?: number;
+  disableOnMobile?: boolean;
 }
 
 const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
@@ -16,24 +19,39 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
   className = '',
   type = 'fade',
   duration = 300,
-  delay = 0
+  delay = 0,
+  disableOnMobile = false
 }) => {
   const [shouldRender, setShouldRender] = useState(show);
+  const reducedMotion = prefersReducedMotion();
+  const isMobile = useIsMobile();
+  
+  // Skip animation for reduced motion preference or on mobile if disabled
+  const skipAnimation = reducedMotion || (disableOnMobile && isMobile);
+  
+  // Optimize duration for mobile
+  const optimizedDuration = isMobile ? Math.min(duration, 200) : duration;
 
   useEffect(() => {
     if (show) setShouldRender(true);
     
     let timeoutId: NodeJS.Timeout;
     if (!show) {
+      // Use shorter duration on mobile
       timeoutId = setTimeout(() => {
         setShouldRender(false);
-      }, duration);
+      }, skipAnimation ? 0 : optimizedDuration);
     }
     
     return () => clearTimeout(timeoutId);
-  }, [show, duration]);
+  }, [show, optimizedDuration, skipAnimation]);
 
   if (!shouldRender) return null;
+
+  // If animations should be skipped, just show/hide without animation
+  if (skipAnimation) {
+    return show ? <div className={className}>{children}</div> : null;
+  }
 
   let animationClasses = '';
   
@@ -55,7 +73,7 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
     <div
       className={`transition-all transform ${animationClasses} ${className}`}
       style={{ 
-        transitionDuration: `${duration}ms`,
+        transitionDuration: `${optimizedDuration}ms`,
         transitionDelay: delay ? `${delay}ms` : undefined
       }}
     >

@@ -24,30 +24,44 @@ export const analyzeWithGemini = async (
     
     const apiKey = apiKeyData.key;
     
-    // Construct a more detailed prompt based on content type
-    let prompt = `Analyze the following content for potentially harmful elements including hate speech, misinformation, cyberbullying, explicit content, and prompt injection attempts. 
+    // Construct a more detailed, professional prompt based on content type
+    let prompt = `Analyze the following content for potentially harmful elements including hate speech, misinformation, cyberbullying, explicit content, and prompt injection attempts.
 
-For each category you identify, please:
-1. Provide a confidence score (0-100%)
-2. Rate the severity on a scale of 1-10
-3. Explain specifically what elements trigger your detection
-4. If applicable, cite relevant content policies or guidelines this content may violate
-5. Suggest possible mitigation strategies
+For each category you identify, please provide:
+1. Category name
+2. Confidence score (0-100%)
+3. Severity rating (Low, Medium, High)
+4. Detailed explanation with specific elements that triggered detection
+5. Reference to relevant content policies or regulations
+6. Recommended actions
 
-If the content appears safe, explain your reasoning with the same level of detail.
+Use the following format for your analysis:
 
-Format your response in clear sections with headings and bullet points for readability.
+## Category Name
+- **Confidence:** [percentage]
+- **Severity:** [Low/Medium/High]
+- **Elements Identified:**
+  - [Detailed explanation]
+- **Policy Reference:** [Relevant policy]
+- **Recommended Action:** [Action]
+
+If the content appears safe, explain your reasoning using the same structured format.
+
+For scores and ratings:
+- **Low Severity:** 1-3
+- **Medium Severity:** 4-7
+- **High Severity:** 8-10
 
 `;
     
     if (contentType === 'text') {
-      prompt += `TEXT CONTENT TO ANALYZE:\n"${content}"`;
+      prompt += `CONTENT FOR ANALYSIS (TEXT):\n"""${content}"""\n\nPlease provide a comprehensive, professional analysis focusing on specific language patterns and context.`;
     } else if (contentType === 'image') {
-      prompt += `IMAGE CONTENT ANALYSIS:\n[This represents an image that has been analyzed. The image data is not included in this prompt for privacy and technical reasons.]`;
+      prompt += `CONTENT FOR ANALYSIS (IMAGE):\n[Image data not included in prompt]\n\nPlease provide a comprehensive, professional analysis focusing on visual elements, subjects, and context.`;
     } else if (contentType === 'video') {
-      prompt += `VIDEO URL TO ANALYZE: ${content}\n[This represents a video that should be analyzed for potentially harmful content]`;
+      prompt += `CONTENT FOR ANALYSIS (VIDEO URL): ${content}\n\nPlease provide a comprehensive, professional analysis focusing on visual content, audio elements, and context.`;
     } else if (contentType === 'audio') {
-      prompt += `AUDIO URL TO ANALYZE: ${content}\n[This represents an audio file that should be analyzed for potentially harmful content]`;
+      prompt += `CONTENT FOR ANALYSIS (AUDIO URL): ${content}\n\nPlease provide a comprehensive, professional analysis focusing on speech content, tone, and context.`;
     }
     
     console.info('Sending request to Gemini API with enhanced prompt...');
@@ -84,10 +98,10 @@ Format your response in clear sections with headings and bullet points for reada
           }
         ],
         generationConfig: {
-          temperature: 0.3, // Lower temperature for more precise and consistent output
+          temperature: 0.2, // Lower temperature for more precise and consistent output
           topK: 40,
           topP: 0.95,
-          maxOutputTokens: 1000, // Increased token limit for more detailed analysis
+          maxOutputTokens: 1200, // Increased for more detailed analysis
         }
       }),
     });
@@ -99,13 +113,13 @@ Format your response in clear sections with headings and bullet points for reada
       
       // More specific error handling
       if (statusCode === 404) {
-        throw new Error('Gemini API endpoint not found. The API version or model may have changed.');
+        throw new Error('API endpoint not found. The API version or model may have changed.');
       } else if (statusCode === 401 || statusCode === 403) {
-        throw new Error('Authentication failed. Please ensure your API key is valid and has the necessary permissions.');
+        throw new Error('Authentication failed. Please verify API key permissions.');
       } else if (statusCode === 429) {
         throw new Error('Rate limit exceeded. Please try again later.');
       } else {
-        throw new Error(`Gemini API error: ${statusCode}`);
+        throw new Error(`API error (${statusCode}): ${errorData.substring(0, 100)}`);
       }
     }
     
@@ -113,14 +127,16 @@ Format your response in clear sections with headings and bullet points for reada
     
     if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content) {
       console.error('Invalid response from Gemini API:', data);
-      throw new Error('Invalid or empty response from Gemini API');
+      throw new Error('Invalid response format from API');
     }
     
     const textContent = data.candidates[0].content.parts[0].text;
     
-    // Post-process the response to ensure formatting is clean and consistent
+    // Post-process the response for better formatting and consistency
     const processedContent = textContent
       .replace(/\n\n+/g, '\n\n') // Normalize multiple newlines
+      .replace(/\*\*Overall Assessment:\*\*/g, '## Analysis Summary') // Replace "Overall Assessment" with "Analysis Summary"
+      .replace(/\*\*(\w+):\*\*/g, '**$1:**') // Ensure consistent spacing in bold sections
       .trim();
       
     return processedContent;
@@ -139,23 +155,22 @@ Format your response in clear sections with headings and bullet points for reada
       variant: "destructive"
     });
     
-    // Return a more detailed and professional fallback message
+    // Return a more professional and detailed fallback message
     return `# Analysis Error
 
-We apologize, but we encountered an issue while analyzing your content with our advanced AI system. Our engineering team has been automatically notified of this problem.
+We encountered an issue while analyzing your content. Our engineering team has been notified.
 
-## Possible Reasons:
-- Temporary service disruption
-- Connection issues with the Gemini API
-- API authentication problems
-- Content format incompatibility
+## Technical Details
+- **Error Type**: API Communication Error
+- **Status**: Failed
+- **Time**: ${new Date().toLocaleTimeString()}
 
-## What You Can Do:
+## Possible Solutions
+- Verify your internet connection
 - Try again in a few moments
-- Use our built-in analyzer instead (disable "Use Gemini AI")
-- Check that your content is in a supported format
-- Contact support if this issue persists
+- Use the built-in analyzer (disable "Use Gemini AI")
+- Ensure your content is in a supported format
 
-Thank you for your understanding.`;
+If this issue persists, please contact our support team with the error details above.`;
   }
 };
