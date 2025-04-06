@@ -137,13 +137,15 @@ const Index = () => {
             <div className="relative w-full max-w-lg mt-4 flex items-center justify-center space-x-4">
               <a href="#analyzer">
                 <GlowingButton 
-                  glowColor="rgba(155, 135, 245, 0.7)"
+                  glowColor="rgba(155, 135, 245, 0.9)"
                   hoverScale={true}
                   pulseEffect={true}
-                  className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base"
+                  className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base transition-all duration-500 hover:shadow-[0_0_25px_rgba(155,135,245,0.7)]"
                 >
-                  <span>Try Analyzer</span>
-                  <Shield className="h-5 w-5 ml-2" />
+                  <span className="relative z-10 flex items-center">
+                    Try Analyzer
+                    <Shield className="h-5 w-5 ml-2 animate-pulse-soft" />
+                  </span>
                 </GlowingButton>
               </a>
               
@@ -151,7 +153,7 @@ const Index = () => {
                 <MovingBorderButton 
                   className="px-6 py-3 text-sm font-medium flex items-center gap-2"
                   borderRadius="9999px"
-                  containerClassName="shadow-md"
+                  containerClassName="shadow-md hover:shadow-lg transition-shadow duration-300"
                 >
                   <span>View on GitHub</span>
                   <ExternalLink className="h-4 w-4" />
@@ -225,13 +227,15 @@ const Index = () => {
               </ul>
               
               <div className="flex flex-wrap gap-4">
-                <MovingBorderButton
-                  className="px-6 py-3 text-sm font-medium flex items-center"
-                  borderRadius="0.5rem"
-                >
-                  <span>Check Out Extension</span>
-                  <ExternalLink className="h-4 w-4 ml-2" />
-                </MovingBorderButton>
+                <a href="https://github.com/user/websaathi-extension" target="_blank" rel="noopener noreferrer">
+                  <MovingBorderButton
+                    className="px-6 py-3 text-sm font-medium flex items-center"
+                    borderRadius="0.5rem"
+                  >
+                    <span>GitHub Repository</span>
+                    <ExternalLink className="h-4 w-4 ml-2" />
+                  </MovingBorderButton>
+                </a>
                 
                 <ShadcnButton 
                   variant="outline" 
@@ -440,12 +444,18 @@ const Index = () => {
             </div>
             
             <div className="flex justify-end mt-2">
-              <ShadcnButton 
-                className="bg-primary hover:bg-primary/90 text-white"
+              <a 
+                href="https://github.com/user/websaathi-extension" 
+                target="_blank" 
+                rel="noopener noreferrer"
               >
-                Install Extension
-                <ExternalLink className="h-4 w-4 ml-1.5" />
-              </ShadcnButton>
+                <ShadcnButton 
+                  className="bg-primary hover:bg-primary/90 text-white"
+                >
+                  View on GitHub
+                  <ExternalLink className="h-4 w-4 ml-1.5" />
+                </ShadcnButton>
+              </a>
             </div>
           </div>
         </DialogContent>

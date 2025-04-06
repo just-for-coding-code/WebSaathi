@@ -40,7 +40,7 @@ const Header: React.FC = () => {
 
   return (
     <header 
-      className={`sticky top-0 z-40 transition-all duration-300 ease-in-out w-full ${
+      className={`sticky top-0 z-40 transition-all duration-500 ease-in-out w-full ${
         scrolled 
           ? "py-3 bg-background/80 backdrop-blur-md border-b border-gray-800/30 shadow-subtle" 
           : "py-5 bg-transparent"
@@ -55,9 +55,9 @@ const Header: React.FC = () => {
               spotlightColor="rgba(155, 135, 245, 0.4)"
             >
               <Link to="/" className="flex items-center space-x-2">
-                <div className="relative h-10 w-10 flex items-center justify-center">
-                  <div className="absolute inset-0 bg-primary/10 rounded-full animate-pulse-soft"></div>
-                  <ShieldCheck className="h-6 w-6 text-primary relative" />
+                <div className="relative h-10 w-10 flex items-center justify-center group">
+                  <div className="absolute inset-0 bg-primary/10 rounded-full animate-pulse-soft group-hover:bg-primary/20 transition-colors duration-300"></div>
+                  <ShieldCheck className="h-6 w-6 text-primary relative group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 <span className="text-xl font-medium bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-primary">
                   WebSaathi
@@ -72,7 +72,7 @@ const Header: React.FC = () => {
               <a 
                 key={item.name}
                 href={item.href}
-                className="text-sm text-foreground/80 hover:text-primary transition-smooth flex items-center"
+                className="text-sm text-foreground/80 hover:text-primary transition-all duration-300 flex items-center relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-primary after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100"
                 target={item.name === 'GitHub' ? '_blank' : undefined}
                 rel={item.name === 'GitHub' ? 'noopener noreferrer' : undefined}
               >

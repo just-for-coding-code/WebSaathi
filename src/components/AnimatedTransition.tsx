@@ -13,7 +13,7 @@ interface AnimatedTransitionProps {
   disableOnMobile?: boolean;
 }
 
-// Add Navigator deviceMemory interface to fix TypeScript error
+// Add proper type definition for NavigatorWithMemory interface
 interface NavigatorWithMemory extends Navigator {
   deviceMemory?: number;
 }

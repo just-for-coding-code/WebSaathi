@@ -13,8 +13,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       {/* Background decorative elements */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,rgba(155,135,245,0.05),transparent_50%)] absolute"></div>
-        <div className="absolute top-20 right-0 w-80 h-80 bg-blue-500/5 rounded-full filter blur-3xl opacity-20"></div>
-        <div className="absolute bottom-40 left-20 w-72 h-72 bg-primary/5 rounded-full filter blur-3xl opacity-20"></div>
+        <div className="absolute top-20 right-0 w-80 h-80 bg-blue-500/5 rounded-full filter blur-3xl opacity-20 animate-pulse-soft"></div>
+        <div className="absolute bottom-40 left-20 w-72 h-72 bg-primary/5 rounded-full filter blur-3xl opacity-20 animate-pulse-soft"></div>
+        
+        {/* Additional decorative elements for a more finished look */}
+        <div className="absolute top-1/3 left-1/4 w-32 h-32 bg-purple-500/5 rounded-full filter blur-2xl opacity-30"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-48 h-48 bg-blue-400/5 rounded-full filter blur-2xl opacity-20"></div>
       </div>
       
       <Header />
@@ -31,9 +35,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               href="https://github.com/websaathi/content-guard" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-primary transition-colors flex items-center gap-2"
+              className="text-gray-400 hover:text-primary transition-colors flex items-center gap-2 group"
             >
-              <Github className="h-4 w-4" />
+              <Github className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
               <span className="text-sm">GitHub</span>
             </a>
             <span className="text-sm text-gray-400">© {new Date().getFullYear()} WebSaathi</span>
