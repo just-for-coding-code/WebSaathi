@@ -36,8 +36,8 @@ const AnimatedTransition: React.FC<AnimatedTransitionProps> = ({
   
   // Enhanced performance detection for improved mobile experience
   const isLowPerformanceDevice = typeof navigator !== 'undefined' && (
-    navigator.hardwareConcurrency <= 4 || 
-    (navigator as NavigatorWithMemory).deviceMemory <= 4 || 
+    (navigator as NavigatorWithMemory).deviceMemory !== undefined && (navigator as NavigatorWithMemory).deviceMemory <= 4 || 
+    navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency <= 4 || 
     /Android [456]/.test(navigator.userAgent)
   );
   

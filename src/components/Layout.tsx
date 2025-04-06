@@ -1,6 +1,7 @@
 
 import React from 'react';
 import Header from './Header';
+import { Github } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,6 +27,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             WebSaathi: Advanced content analysis for a safer online experience
           </p>
           <div className="flex items-center space-x-4">
+            <a 
+              href="https://github.com/websaathi/content-guard" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-primary transition-colors flex items-center gap-2"
+            >
+              <Github className="h-4 w-4" />
+              <span className="text-sm">GitHub</span>
+            </a>
             <span className="text-sm text-gray-400">© {new Date().getFullYear()} WebSaathi</span>
           </div>
         </div>

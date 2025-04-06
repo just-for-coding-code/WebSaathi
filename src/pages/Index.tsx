@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Shield, Info, AlertTriangle, MessageSquareX, UserX, EyeOff, ShieldAlert, ShieldCheck, ExternalLink } from 'lucide-react';
+
+import React, { useEffect, useRef } from 'react';
+import { Shield, Info, AlertTriangle, ShieldAlert, ShieldCheck, ExternalLink } from 'lucide-react';
 import Layout from '../components/Layout';
 import TextAnalyzer from '../components/TextAnalyzer';
 import CategoryCard from '../components/CategoryCard';
@@ -12,6 +13,7 @@ import BackgroundBeams from '@/components/BackgroundBeams';
 import GlowingButton from '@/components/GlowingButton';
 import CardSpotlight from '@/components/CardSpotlight';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useState } from 'react';
 
 const Index = () => {
   const featuresRef = useRef<HTMLElement>(null);
@@ -145,13 +147,14 @@ const Index = () => {
                 </GlowingButton>
               </a>
               
-              <a href="#about">
+              <a href="https://github.com/websaathi/content-guard" target="_blank" rel="noopener noreferrer">
                 <MovingBorderButton 
-                  className="px-6 py-3 text-sm font-medium"
-                  borderRadius="9999px" // Rounded-full equivalent
+                  className="px-6 py-3 text-sm font-medium flex items-center gap-2"
+                  borderRadius="9999px"
                   containerClassName="shadow-md"
                 >
-                  Learn More
+                  <span>View on GitHub</span>
+                  <ExternalLink className="h-4 w-4" />
                 </MovingBorderButton>
               </a>
             </div>
