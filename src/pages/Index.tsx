@@ -1,5 +1,4 @@
-
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Shield, Info, AlertTriangle, ShieldAlert, ShieldCheck, ExternalLink } from 'lucide-react';
 import Layout from '../components/Layout';
 import TextAnalyzer from '../components/TextAnalyzer';
@@ -13,7 +12,6 @@ import BackgroundBeams from '@/components/BackgroundBeams';
 import GlowingButton from '@/components/GlowingButton';
 import CardSpotlight from '@/components/CardSpotlight';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useState } from 'react';
 
 const Index = () => {
   const featuresRef = useRef<HTMLElement>(null);
@@ -140,24 +138,13 @@ const Index = () => {
                   glowColor="rgba(155, 135, 245, 0.9)"
                   hoverScale={true}
                   pulseEffect={true}
-                  className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base transition-all duration-500 hover:shadow-[0_0_25px_rgba(155,135,245,0.7)]"
+                  className="px-8 py-3.5 rounded-full bg-primary text-primary-foreground shadow-lg font-medium text-base transition-all duration-500 hover:shadow-[0_0_25px_rgba(155,135,245,0.7)] group"
                 >
                   <span className="relative z-10 flex items-center">
                     Try Analyzer
-                    <Shield className="h-5 w-5 ml-2 animate-pulse-soft" />
+                    <Shield className="h-5 w-5 ml-2 group-hover:rotate-360 group-hover:scale-110 transition-all duration-500" />
                   </span>
                 </GlowingButton>
-              </a>
-              
-              <a href="https://github.com/websaathi/content-guard" target="_blank" rel="noopener noreferrer">
-                <MovingBorderButton 
-                  className="px-6 py-3 text-sm font-medium flex items-center gap-2"
-                  borderRadius="9999px"
-                  containerClassName="shadow-md hover:shadow-lg transition-shadow duration-300"
-                >
-                  <span>View on GitHub</span>
-                  <ExternalLink className="h-4 w-4" />
-                </MovingBorderButton>
               </a>
             </div>
           </AnimatedTransition>
@@ -232,7 +219,7 @@ const Index = () => {
                     className="px-6 py-3 text-sm font-medium flex items-center"
                     borderRadius="0.5rem"
                   >
-                    <span>GitHub Repository</span>
+                    <span>Extension Repository</span>
                     <ExternalLink className="h-4 w-4 ml-2" />
                   </MovingBorderButton>
                 </a>

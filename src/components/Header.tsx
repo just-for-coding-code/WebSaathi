@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShieldCheck, Menu, Github } from 'lucide-react';
+import { ShieldCheck, Menu } from 'lucide-react';
 import { 
   Sheet, SheetContent, SheetTrigger 
 } from '@/components/ui/sheet';
@@ -34,8 +34,7 @@ const Header: React.FC = () => {
     { name: 'Features', href: '/#features' },
     { name: 'Harm Categories', href: '/#categories' },
     { name: 'Extension', href: '/#extension' },
-    { name: 'About', href: '/#about' },
-    { name: 'GitHub', href: 'https://github.com/websaathi/content-guard', icon: <Github className="h-4 w-4 ml-1" /> }
+    { name: 'About', href: '/#about' }
   ];
 
   return (
@@ -73,11 +72,8 @@ const Header: React.FC = () => {
                 key={item.name}
                 href={item.href}
                 className="text-sm text-foreground/80 hover:text-primary transition-all duration-300 flex items-center relative after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-primary after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100"
-                target={item.name === 'GitHub' ? '_blank' : undefined}
-                rel={item.name === 'GitHub' ? 'noopener noreferrer' : undefined}
               >
                 {item.name}
-                {item.icon && item.icon}
               </a>
             ))}
           </nav>
@@ -98,11 +94,8 @@ const Header: React.FC = () => {
                       key={item.name}
                       href={item.href}
                       className="text-foreground hover:text-primary text-lg font-medium transition-colors flex items-center"
-                      target={item.name === 'GitHub' ? '_blank' : undefined}
-                      rel={item.name === 'GitHub' ? 'noopener noreferrer' : undefined}
                     >
                       {item.name}
-                      {item.icon && item.icon}
                     </a>
                   ))}
                 </div>
